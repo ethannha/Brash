@@ -1,0 +1,16 @@
+This is an example using TAGE's networking support.
+(actually it is a SAGE package adapted for TAGE)
+
+First, you run the server's run.bat.
+It then waits for clients to connect.
+
+Next, you run a client's run.bat.
+You need to make sure that the run.bat points to the IP address
+of the machine where you ran the server.
+
+The avatar is a dolphin, the ghost avatar(s) is a sphere.
+
+You can run multiple clients, even from one computer (although that
+can be a bit clumsy).
+
+The rest of the scene is the same as example #2b.
