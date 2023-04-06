@@ -5,15 +5,18 @@ import net.java.games.input.Event;
 public class TurnLeftAction extends AbstractInputAction
 {
     private MyGame game;
+    private ProtocolClient protClient;
 
-    public TurnLeftAction (MyGame g)
+    public TurnLeftAction (MyGame g, ProtocolClient p)
     {
         game = g;
+        protClient = p;
     }
 
     @Override
     public void performAction(float time, Event e)
     {
         game.getAvatar().turnObjLeft(e, game.getElapseTime());
+        protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }
 }

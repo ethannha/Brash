@@ -24,6 +24,9 @@ import net.java.games.input.*;
 import net.java.games.input.Component.Identifier.*;
 import net.java.games.input.Event;
 
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+
 public class MyGame extends VariableFrameRateGame
 {
 	private int score=0, itemHolding=0;
@@ -57,6 +60,11 @@ public class MyGame extends VariableFrameRateGame
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 
+	// Script
+	private File script1;
+	private long fileLastModified = 0;
+	ScriptEngine jsEngine;
+
 	public MyGame(String serverAddress, int serverPort, String protocol) 
 	{ 
 		super(); 
@@ -84,7 +92,7 @@ public class MyGame extends VariableFrameRateGame
 	@Override
 	public void loadShapes()
 	{	dolS = new ImportedModel("player.obj");
-		ghostS = new Sphere();
+		ghostS = new ImportedModel("player.obj");
 		cubS = new Cube();
 		trapObjS = new Sphere();
 
@@ -105,7 +113,7 @@ public class MyGame extends VariableFrameRateGame
 	public void loadTextures()
 	{
 		doltx = new TextureImage("player_uv.png");
-		ghostT = new TextureImage("redDolphin.jpg");
+		ghostT = new TextureImage("ghost_uv.png");
 		blueWall = new TextureImage("BlueWall.png");
 		binCollector = new TextureImage("CollectorLogo.png");
 		bombSkin = new TextureImage("BombSkin.png");
@@ -186,14 +194,6 @@ public class MyGame extends VariableFrameRateGame
 		light1 = new Light();
 		light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
 		(engine.getSceneGraph()).addLight(light1);
-
-		light2 = new Light();
-		light2.setAmbient(1.0f, .0f, 1.0f);
-		light2.setDiffuse(0.1f, 0.1f, 0.1f);
-		light2.setSpecular(0.2f, 0.2f, 0.2f);
-		light2.setLocation(new Vector3f(5, 5, 5));
-		light2.setDirection(new Vector3f(0.0f,0.0f,0.0f));
-		(engine.getSceneGraph()).addLight(light2);
 	}
 
 	@Override
@@ -204,6 +204,9 @@ public class MyGame extends VariableFrameRateGame
 		elapsTime = 0.0;
 		
 		(engine.getRenderSystem()).setWindowDimensions(1900,1000);
+
+		// Setting up network
+		setupNetworking();
 
 		// -------------- Node Controllers --------------------------
 		rotationNode = new RotationController(engine, new Vector3f(0.0f, 1.0f, 0.0f), 0.001f);
@@ -240,10 +243,10 @@ public class MyGame extends VariableFrameRateGame
 		orbitController = new CameraOrbitController(this, leftCamera, avatar, gpName, engine);
 		overviewController = new CameraOverviewController(this, rightCamera, avatar, gpName, engine);
 
-		FwdAction fwdAction = new FwdAction(this);
-		BackAction backAction = new BackAction(this);
-		TurnLeftAction turnLeftAction = new TurnLeftAction(this);
-		TurnRightAction turnRightAction = new TurnRightAction(this);
+		FwdAction fwdAction = new FwdAction(this, protClient);
+		BackAction backAction = new BackAction(this, protClient);
+		TurnLeftAction turnLeftAction = new TurnLeftAction(this, protClient);
+		TurnRightAction turnRightAction = new TurnRightAction(this, protClient);
 		GamePadTurn gamePadTurn = new GamePadTurn(this);
 		GamePadAction gamePadAction = new GamePadAction(this);
 		ToggleAxis toggleAxis = new ToggleAxis(x, y, z);
@@ -256,8 +259,6 @@ public class MyGame extends VariableFrameRateGame
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-
-		setupNetworking();
 	}
 
 	public void createViewports()
