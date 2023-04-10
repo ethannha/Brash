@@ -33,9 +33,9 @@ public class MyGame extends VariableFrameRateGame
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
-	private GameObject cub, avatar, x, y, z, diamond, trapObj, worldPlane;
-	private ObjShape dolS, cubS, linxS, linyS, linzS, diamondS, trapObjS, ghostS;
-	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT;
+	private GameObject cub, avatar, x, y, z, diamond, trapObj, worldPlane, worldTerrain;
+	private ObjShape dolS, cubS, linxS, linyS, linzS, diamondS, trapObjS, ghostS, terrainS;
+	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT, hills, grass;
 	private Light light1, light2;
 	private InputManager im;
 	private Camera leftCamera, rightCamera;
@@ -95,6 +95,7 @@ public class MyGame extends VariableFrameRateGame
 		ghostS = new ImportedModel("player.obj");
 		cubS = new Cube();
 		trapObjS = new Sphere();
+		terrainS = new TerrainPlane(1000);
 
 		//Coordinate system
 		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
@@ -118,6 +119,9 @@ public class MyGame extends VariableFrameRateGame
 		binCollector = new TextureImage("CollectorLogo.png");
 		bombSkin = new TextureImage("BombSkin.png");
 		oceanTexture = new TextureImage("OceanFloor.png");
+		hills = new TextureImage("hills.jpg");
+		grass = new TextureImage("grass.jpg");
+
 	}
 
 	@Override
@@ -130,7 +134,8 @@ public class MyGame extends VariableFrameRateGame
 
 	@Override
 	public void buildObjects()
-	{	Matrix4f initialTranslation, initialRotation, initialScale;
+	{	
+		Matrix4f initialTranslation, initialRotation, initialScale;
 
 		// build dolphin in the center of the window
 		avatar = new GameObject(GameObject.root(), dolS, doltx);
@@ -186,6 +191,15 @@ public class MyGame extends VariableFrameRateGame
 		initialScale = (new Matrix4f()).scaling(15.0f);
 		worldPlane.setLocalTranslation(initialTranslation);
 		worldPlane.setLocalScale(initialScale);
+
+		// build world terrain object
+		worldTerrain = new GameObject(GameObject.root(), terrainS, grass);
+		initialTranslation = (new Matrix4f()).translation(0f,0f,0f);
+		worldTerrain.setLocalTranslation(initialTranslation);
+		initialScale = (new Matrix4f()).scaling(20.0f, 1.0f, 20.0f);
+		worldTerrain.setLocalScale(initialScale);
+		worldTerrain.setHeightMap(hills);
+
 	}
 
 	@Override
@@ -379,6 +393,11 @@ public class MyGame extends VariableFrameRateGame
 		currFrameTime = System.currentTimeMillis();
 		elapsTime += (currFrameTime - lastFrameTime) / 1000.0;
 
+		// update altitude of avatar based on height mapping
+		Vector3f loc = avatar.getWorldLocation();
+		float height = worldTerrain.getHeight(loc.x(), loc.z());
+		avatar.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
+
 		// build and set HUD
 		int elapsTimeSec = Math.round((float)elapsTime);
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
@@ -392,7 +411,7 @@ public class MyGame extends VariableFrameRateGame
 		(engine.getHUDmanager()).setHUD2(dispStr2, hud2Color, (int)((engine.getRenderSystem()).getSize().getWidth()-(engine.getRenderSystem()).getViewport("RIGHT").getActualWidth()), 15);
 
 
-		//update inputs and camera
+		// update inputs and camera
 		im.update((float)elapsTime);
 		orbitController.updateCameraPosition();
 		overviewController.updateOverviewPosition();
