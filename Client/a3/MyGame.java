@@ -16,6 +16,7 @@ import javax.swing.*;
 import org.joml.*;
 
 import tage.input.*;
+import tage.input.IInputManager.INPUT_ACTION_TYPE;
 import tage.input.action.*;
 import tage.networking.IGameConnection.ProtocolType;
 import tage.nodeControllers.AttachController;
@@ -294,12 +295,14 @@ public class MyGame extends VariableFrameRateGame
 		GamePadTurn gamePadTurn = new GamePadTurn(this);
 		GamePadAction gamePadAction = new GamePadAction(this);
 		ToggleAxis toggleAxis = new ToggleAxis(x, y, z);
+		ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
 
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.TAB, toggleAxis, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.W, fwdAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, backAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, turnLeftAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, turnRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);

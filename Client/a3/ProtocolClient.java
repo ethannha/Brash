@@ -18,7 +18,8 @@ public class ProtocolClient extends GameConnectionClient
 	private UUID id;
 	
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
-	{	super(remoteAddr, remotePort, protocolType);
+	{	
+		super(remoteAddr, remotePort, protocolType);
 		this.game = game;
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
@@ -28,7 +29,8 @@ public class ProtocolClient extends GameConnectionClient
 	
 	@Override
 	protected void processPacket(Object message)
-	{	String strMessage = (String)message;
+	{	
+		String strMessage = (String)message;
 		System.out.println("message received -->" + strMessage);
 		String[] messageTokens = strMessage.split(",");
 		
@@ -39,19 +41,22 @@ public class ProtocolClient extends GameConnectionClient
 			// Format: (join,success) or (join,failure)
 			if(messageTokens[0].compareTo("join") == 0)
 			{	if(messageTokens[1].compareTo("success") == 0)
-				{	System.out.println("join success confirmed");
+				{	
+					System.out.println("join success confirmed");
 					game.setIsConnected(true);
 					sendCreateMessage(game.getPlayerPosition());
 				}
 				if(messageTokens[1].compareTo("failure") == 0)
-				{	System.out.println("join failure confirmed");
+				{	
+					System.out.println("join failure confirmed");
 					game.setIsConnected(false);
 			}	}
 			
 			// Handle BYE message
 			// Format: (bye,remoteId)
 			if(messageTokens[0].compareTo("bye") == 0)
-			{	// remove ghost avatar with id = remoteId
+			{	
+				// remove ghost avatar with id = remoteId
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				ghostManager.removeGhostAvatar(ghostID);
@@ -63,7 +68,8 @@ public class ProtocolClient extends GameConnectionClient
 			// Handle DETAILS_FOR message
 			// Format: (dsfr,remoteId,x,y,z)
 			if (messageTokens[0].compareTo("create") == 0 || (messageTokens[0].compareTo("dsfr") == 0))
-			{	// create a new ghost avatar
+			{	
+				// create a new ghost avatar
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
 				
@@ -74,9 +80,12 @@ public class ProtocolClient extends GameConnectionClient
 					Float.parseFloat(messageTokens[4]));
 
 				try
-				{	ghostManager.createGhostAvatar(ghostID, ghostPosition);
-				}	catch (IOException e)
-				{	System.out.println("error creating ghost avatar");
+				{	
+					ghostManager.createGhostAvatar(ghostID, ghostPosition);
+				}	
+				catch (IOException e)
+				{	
+					System.out.println("error creating ghost avatar");
 				}
 			}
 			
@@ -114,9 +123,12 @@ public class ProtocolClient extends GameConnectionClient
 	
 	public void sendJoinMessage()
 	{	try 
-		{	sendPacket(new String("join," + id.toString()));
-		} catch (IOException e) 
-		{	e.printStackTrace();
+		{	
+			sendPacket(new String("join," + id.toString()));
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
 	}	}
 	
 	// Informs the server that the client is leaving the server. 
@@ -124,9 +136,12 @@ public class ProtocolClient extends GameConnectionClient
 
 	public void sendByeMessage()
 	{	try 
-		{	sendPacket(new String("bye," + id.toString()));
-		} catch (IOException e) 
-		{	e.printStackTrace();
+		{	
+			sendPacket(new String("bye," + id.toString()));
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
 	}	}
 	
 	// Informs the server of the client�s Avatar�s position. The server 
@@ -136,14 +151,16 @@ public class ProtocolClient extends GameConnectionClient
 
 	public void sendCreateMessage(Vector3f position)
 	{	try 
-		{	String message = new String("create," + id.toString());
+		{	
+			String message = new String("create," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-			
 			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
 	}	}
 	
 	// Informs the server of the local avatar's position. The server then 
@@ -154,14 +171,17 @@ public class ProtocolClient extends GameConnectionClient
 
 	public void sendDetailsForMessage(UUID remoteId, Vector3f position)
 	{	try 
-		{	String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
+		{	
+			String message = new String("dsfr," + remoteId.toString() + "," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
 			
 			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
 	}	}
 	
 	// Informs the server that the local avatar has changed position.  
@@ -169,13 +189,16 @@ public class ProtocolClient extends GameConnectionClient
 
 	public void sendMoveMessage(Vector3f position)
 	{	try 
-		{	String message = new String("move," + id.toString());
+		{	
+			String message = new String("move," + id.toString());
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
 			
 			sendPacket(message);
-		} catch (IOException e) 
-		{	e.printStackTrace();
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
 	}	}
 }
