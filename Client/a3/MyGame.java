@@ -26,6 +26,8 @@ import net.java.games.input.Event;
 
 import javax.script.Invocable;
 import javax.script.ScriptEngine;
+import javax.script.ScriptEngineManager;
+import javax.script.ScriptException;
 
 public class MyGame extends VariableFrameRateGame
 {
@@ -36,7 +38,7 @@ public class MyGame extends VariableFrameRateGame
 	private GameObject cub, avatar, x, y, z, diamond, trapObj, worldPlane, worldTerrain;
 	private ObjShape dolS, cubS, linxS, linyS, linzS, diamondS, trapObjS, ghostS, terrainS;
 	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT, hills, grass;
-	private Light light1, light2;
+	private Light light1;
 	private InputManager im;
 	private Camera leftCamera, rightCamera;
 	private CameraOrbitController orbitController;
@@ -50,6 +52,8 @@ public class MyGame extends VariableFrameRateGame
 	private LinkedList<GameObject> diamondList = new LinkedList<>();
 	private LinkedList<GameObject> trapList = new LinkedList<>();
 
+	private float currHeight, prevHeight;
+
 	private Random rand = new Random();
 
 	// Ghost and Connection
@@ -61,9 +65,14 @@ public class MyGame extends VariableFrameRateGame
 	private boolean isClientConnected = false;
 
 	// Script
-	private File script1;
+	private File script1, script2;
 	private long fileLastModified = 0;
 	ScriptEngine jsEngine;
+	Invocable invocableEngine;
+
+	// Player
+	private double player1WinCounter;
+	private double player2WinCounter;
 
 	public MyGame(String serverAddress, int serverPort, String protocol) 
 	{ 
@@ -119,8 +128,8 @@ public class MyGame extends VariableFrameRateGame
 		binCollector = new TextureImage("CollectorLogo.png");
 		bombSkin = new TextureImage("BombSkin.png");
 		oceanTexture = new TextureImage("OceanFloor.png");
-		hills = new TextureImage("hills.jpg");
-		grass = new TextureImage("grass.jpg");
+		hills = new TextureImage("hill2.png");
+		grass = new TextureImage("grass2.png");
 
 	}
 
@@ -166,7 +175,7 @@ public class MyGame extends VariableFrameRateGame
 		for (int i = 0; i < 3; i++)
 		{
 			diamond = new GameObject(GameObject.root(), diamondS, blueWall);
-			initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 0.0f, rand.nextInt(14)));
+			initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.0f, rand.nextInt(14)));
 			initialScale = (new Matrix4f()).scaling(0.25f);
 			diamond.setLocalTranslation(initialTranslation);
 			diamond.getRenderStates().hasLighting(true);
@@ -178,7 +187,7 @@ public class MyGame extends VariableFrameRateGame
 		for (int i = 0; i < 7; i++)
 		{
 			trapObj = new GameObject(GameObject.root(), trapObjS, bombSkin);
-			initialTranslation = (new Matrix4f()).translation(rand.nextInt(14) + (-rand.nextInt(14)), 0.0f, rand.nextInt(14));
+			initialTranslation = (new Matrix4f()).translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.0f, rand.nextInt(14));
 			initialScale = (new Matrix4f()).scaling(0.25f);
 			trapObj.setLocalTranslation(initialTranslation);
 			trapObj.setLocalScale(initialScale);
@@ -222,6 +231,13 @@ public class MyGame extends VariableFrameRateGame
 		// Setting up network
 		setupNetworking();
 
+		// initialize scripting engine
+		ScriptEngineManager factory = new ScriptEngineManager();
+		jsEngine = factory.getEngineByName("js");
+
+		invocableEngine = (Invocable)jsEngine;
+
+
 		// -------------- Node Controllers --------------------------
 		rotationNode = new RotationController(engine, new Vector3f(0.0f, 1.0f, 0.0f), 0.001f);
 		attachNode = new AttachController(avatar);
@@ -250,6 +266,20 @@ public class MyGame extends VariableFrameRateGame
 		
 		// ------------- Creating the cameras/viewports -------------
 		createViewports();
+
+		// ------------- Terrain Height ------------------------------
+		currHeight = 0.0f;
+		prevHeight = 0.0f;
+
+		// -------------- Initialize Players Win --------------------
+		script1 = new File("assets/scripts/initParams.js");
+		this.runScript(script1);
+		player1WinCounter = ((int)jsEngine.get("p1Win"));
+		player2WinCounter = ((int)jsEngine.get("p2Win"));
+
+		// ------------- Initialize Update win counter --------------
+		script2 = new File("assets/scripts/updateWinCount.js");
+		this.runScript(script2);
 		// --------------------- INPUT SECTION -----------------------
 		im = engine.getInputManager();
 		String gpName = im.getFirstGamepadName();
@@ -298,7 +328,32 @@ public class MyGame extends VariableFrameRateGame
 		rightCamera.setU(new Vector3f(1.0f, 0.0f, 0.0f));
 		rightCamera.setV(new Vector3f(0.0f, 0.0f, -1.0f));
 		rightCamera.setN(new Vector3f(0.0f, -1.0f, 0.0f));
+	}
 
+	private void runScript(File scriptFile)
+	{
+		try
+		{
+			FileReader fileReader = new FileReader(scriptFile);
+			jsEngine.eval(fileReader);
+			fileReader.close();
+		}
+		catch (FileNotFoundException e1)
+		{
+			System.out.println(scriptFile + " not found " + e1);
+		}
+		catch (IOException e2)
+		{
+			System.out.println("IO problem with " + scriptFile + "; " + e2);
+		}
+		catch (ScriptException e3)
+		{
+			System.out.println("ScriptException in " + scriptFile + "; " + e3);
+		}
+		catch (NullPointerException e4)
+		{
+			System.out.println("Null ptr exception reading " + scriptFile + "; " + e4);
+		}
 	}
 
 	public GameObject getAvatar()
@@ -393,17 +448,13 @@ public class MyGame extends VariableFrameRateGame
 		currFrameTime = System.currentTimeMillis();
 		elapsTime += (currFrameTime - lastFrameTime) / 1000.0;
 
-		// update altitude of avatar based on height mapping
-		Vector3f loc = avatar.getWorldLocation();
-		float height = worldTerrain.getHeight(loc.x(), loc.z());
-		avatar.setLocalLocation(new Vector3f(loc.x(), height, loc.z()));
-
 		// build and set HUD
 		int elapsTimeSec = Math.round((float)elapsTime);
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
 		String scorerStr = Integer.toString(score);
 		String itemHoldStr = Integer.toString(itemHolding);
-		String dispStr1 = "Time = " + elapsTimeStr + "      Score = " + scorerStr + "      Item Holding = " + itemHoldStr;
+		String dispStr1 = "Time = " + elapsTimeStr + "      Score = " + scorerStr + "      Item Holding = " + itemHoldStr + 
+		"            P1: " + (int)player1WinCounter + "     P2: " + (int)player2WinCounter;
 		String dispStr2 = "X = " + avatar.getWorldLocation().x() + "  Y = " + avatar.getWorldLocation().y() + "  Z = " + avatar.getWorldLocation().z();
 		Vector3f hud1Color = new Vector3f(1,0,0);
 		Vector3f hud2Color = new Vector3f(0,0,1);
@@ -416,12 +467,40 @@ public class MyGame extends VariableFrameRateGame
 		orbitController.updateCameraPosition();
 		overviewController.updateOverviewPosition();
 
+		// update altitude of avatar based on height mapping
+		
+		Vector3f loc = avatar.getWorldLocation();
+		currHeight = worldTerrain.getHeight(loc.x(), loc.z());
+
+		if (currHeight != prevHeight)
+		{
+			avatar.setLocalLocation(new Vector3f(loc.x(), currHeight, loc.z()));
+		}
+
+		prevHeight = currHeight;
+
 		for (int i = 0; i < trapList.size(); i++)
 		{
 			if (isAvatarCollidingObj(trapList.get(i)))
 			{
 				GameObject.root().removeObj(trapList.get(i));
 				score -= 1;
+				try
+				{
+					player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
+				}
+				catch (ScriptException e1)
+				{
+					System.out.println("ScriptException in " + script2 + "; " + e1);
+				}
+				catch (NoSuchMethodException e2)
+				{
+					System.out.println("No such function/method in " + script2 + "; " + e2);
+				}
+				catch (NullPointerException e3)
+				{
+					System.out.println("Null ptr exception in " + script2 + "; " + e3);
+				}
 			}
 		}
 
@@ -450,10 +529,26 @@ public class MyGame extends VariableFrameRateGame
 				removePrize(attachNode2, diamondList.get(1));
 				removePrize(attachNode3, diamondList.get(2));
 				score++;
+				try
+				{
+					player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
+					
+				}
+				catch (ScriptException e1)
+				{
+					System.out.println("ScriptException in " + script2 + "; " + e1);
+				}
+				catch (NoSuchMethodException e2)
+				{
+					System.out.println("No such function/method in " + script2 + "; " + e2);
+				}
+				catch (NullPointerException e3)
+				{
+					System.out.println("Null ptr exception in " + script2 + "; " + e3);
+				}
 				itemHolding--;
 			}
 		}
-
 		processNetworking((float)elapsTime);
 	}
 
