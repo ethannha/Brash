@@ -295,17 +295,31 @@ public class MyGame extends VariableFrameRateGame
 		GamePadTurn gamePadTurn = new GamePadTurn(this);
 		GamePadAction gamePadAction = new GamePadAction(this);
 		ToggleAxis toggleAxis = new ToggleAxis(x, y, z);
-		ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
+		//ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
 
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.TAB, toggleAxis, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.W, fwdAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, backAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, turnLeftAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, turnRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
+		//im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+		switch (e.getKeyCode())
+		{
+			case KeyEvent.VK_ESCAPE:
+				System.out.println("CLIENT SEND BYE MESSAGE");
+				protClient.sendByeMessage();
+				this.shutdown();
+				System.exit(0);
+				break;
+		}
 	}
 
 	public void createViewports()
@@ -553,6 +567,7 @@ public class MyGame extends VariableFrameRateGame
 			}
 		}
 		processNetworking((float)elapsTime);
+		protClient.processPackets();
 	}
 
 	//Networking methods
