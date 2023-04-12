@@ -308,6 +308,35 @@ public class MyGame extends VariableFrameRateGame
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 	}
 
+	//Networking methods
+	private void setupNetworking()
+	{
+		isClientConnected = false;
+		try
+		{
+			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
+		}
+		catch (UnknownHostException e)
+		{
+			e.printStackTrace();
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+
+		if (protClient == null)
+		{
+			System.out.println("Missing protocol host");
+		}
+		else
+		{
+			// ask client protocol to send initial join message
+			// to server, with a unique identifier for the client
+			protClient.sendJoinMessage();
+		}
+	}
+
 	@Override
 	public void keyPressed(KeyEvent e)
 	{
@@ -481,6 +510,7 @@ public class MyGame extends VariableFrameRateGame
 
 		// update inputs and camera
 		im.update((float)elapsTime);
+
 		orbitController.updateCameraPosition();
 		overviewController.updateOverviewPosition();
 
@@ -566,38 +596,11 @@ public class MyGame extends VariableFrameRateGame
 				itemHolding--;
 			}
 		}
-		processNetworking((float)elapsTime);
 		protClient.processPackets();
+		processNetworking((float)elapsTime);
 	}
 
-	//Networking methods
-	private void setupNetworking()
-	{
-		isClientConnected = false;
-		try
-		{
-			protClient = new ProtocolClient(InetAddress.getByName(serverAddress), serverPort, serverProtocol, this);
-		}
-		catch (UnknownHostException e)
-		{
-			e.printStackTrace();
-		}
-		catch (IOException e)
-		{
-			e.printStackTrace();
-		}
-
-		if (protClient == null)
-		{
-			System.out.println("Missing protocol host");
-		}
-		else
-		{
-			// ask client protocol to send initial join message
-			// to server, with a unique identifier for the client
-			protClient.sendJoinMessage();
-		}
-	}
+	
 
 	protected void processNetworking(float elapsTime)
 	{
