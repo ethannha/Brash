@@ -38,7 +38,7 @@ public class MyGame extends VariableFrameRateGame
 	private static Engine engine;
 	private GameObject cub, avatar, x, y, z, diamond, trapObj, worldPlane, worldTerrain;
 	private ObjShape dolS, cubS, linxS, linyS, linzS, diamondS, trapObjS, ghostS, terrainS;
-	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT, hills, grass;
+	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT, hills, grass, prizeTexture;
 	private Light light1;
 	private InputManager im;
 	private Camera leftCamera, rightCamera;
@@ -113,7 +113,7 @@ public class MyGame extends VariableFrameRateGame
 		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, -3f));
 
 		//Diamond object
-		diamondS = new ManualDiamond();
+		diamondS = new ImportedModel("crown.obj");//new ManualDiamond();
 
 		//Plane object
 		wPlane = new WorldPlane();
@@ -126,6 +126,7 @@ public class MyGame extends VariableFrameRateGame
 		doltx = new TextureImage("player_uv.png");
 		ghostT = new TextureImage("ghost_uv.png");
 		blueWall = new TextureImage("BlueWall.png");
+		prizeTexture = new TextureImage("crown2_texture.png");
 		binCollector = new TextureImage("CollectorLogo.png");
 		bombSkin = new TextureImage("BombSkin.png");
 		oceanTexture = new TextureImage("OceanFloor.png");
@@ -175,8 +176,8 @@ public class MyGame extends VariableFrameRateGame
 		// build diamond list
 		for (int i = 0; i < 3; i++)
 		{
-			diamond = new GameObject(GameObject.root(), diamondS, blueWall);
-			initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.0f, rand.nextInt(14)));
+			diamond = new GameObject(GameObject.root(), diamondS, prizeTexture);
+			initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.25f, rand.nextInt(14)));
 			initialScale = (new Matrix4f()).scaling(0.25f);
 			diamond.setLocalTranslation(initialTranslation);
 			diamond.getRenderStates().hasLighting(true);
