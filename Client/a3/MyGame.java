@@ -37,8 +37,8 @@ public class MyGame extends VariableFrameRateGame
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
-	private GameObject cub, avatar, x, y, z, diamond, worldTerrain;
-	private ObjShape avatarS, diamondS, ghostS, terrainS;
+	private GameObject avatar, x, y, z, prizeItem, worldTerrain;
+	private ObjShape avatarS, prizeItemS, ghostS, terrainS;
 	private TextureImage doltx, ghostT, hills, grass, prizeTexture;
 	private Light light1;
 	private InputManager im;
@@ -46,11 +46,9 @@ public class MyGame extends VariableFrameRateGame
 	private CameraOrbitController orbitController;
 	private CameraOverviewController overviewController;
 	private NodeController rotationNode;
-	private AttachController attachNode, attachNode2, attachNode3;
+	private AttachController attachNode;
 
 	private int fluffyClouds; //skybox
-
-	private LinkedList<GameObject> prizeList = new LinkedList<>();
 
 	private float currHeight, prevHeight;
 
@@ -105,7 +103,7 @@ public class MyGame extends VariableFrameRateGame
 		terrainS = new TerrainPlane(1000);
 
 		//Diamond object
-		diamondS = new ImportedModel("crown.obj");
+		prizeItemS = new ImportedModel("crown.obj");
 
 	}
 
@@ -150,16 +148,12 @@ public class MyGame extends VariableFrameRateGame
 		avatar.setLocalRotation(initialRotation);
 
 		// build diamond list
-		for (int i = 0; i < 3; i++)
-		{
-			diamond = new GameObject(GameObject.root(), diamondS, prizeTexture);
-			initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.25f, rand.nextInt(14)));
-			initialScale = (new Matrix4f()).scaling(0.25f);
-			diamond.setLocalTranslation(initialTranslation);
-			diamond.getRenderStates().hasLighting(true);
-			diamond.setLocalScale(initialScale);
-			prizeList.add(diamond);
-		}
+		prizeItem = new GameObject(GameObject.root(), prizeItemS, prizeTexture);
+		initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.25f, rand.nextInt(14)));
+		initialScale = (new Matrix4f()).scaling(0.25f);
+		prizeItem.setLocalTranslation(initialTranslation);
+		prizeItem.getRenderStates().hasLighting(true);
+		prizeItem.setLocalScale(initialScale);
 
 		// build world terrain object
 		worldTerrain = new GameObject(GameObject.root(), terrainS, grass);
@@ -201,22 +195,12 @@ public class MyGame extends VariableFrameRateGame
 		// -------------- Node Controllers --------------------------
 		rotationNode = new RotationController(engine, new Vector3f(0.0f, 1.0f, 0.0f), 0.001f);
 		attachNode = new AttachController(avatar);
-		attachNode2 = new AttachController(avatar);
-		attachNode3 = new AttachController(avatar);
-		for (int i = 0; i < prizeList.size(); i++)
-		{
-			rotationNode.addTarget(prizeList.get(i));
-			changeLocationByAvatar(prizeList.get(i));
-		}
-		
-		attachNode.addTarget(prizeList.get(0));
-		attachNode2.addTarget(prizeList.get(1));
-		attachNode3.addTarget(prizeList.get(2));
+		rotationNode.addTarget(prizeItem);
+		changeLocationByAvatar(prizeItem);
+		attachNode.addTarget(prizeItem);
 
 		(engine.getSceneGraph()).addNodeController(rotationNode);
 		(engine.getSceneGraph()).addNodeController(attachNode);
-		(engine.getSceneGraph()).addNodeController(attachNode2);
-		(engine.getSceneGraph()).addNodeController(attachNode3);
 		rotationNode.toggle();
 		
 		// ------------- Creating the cameras/viewports -------------
@@ -471,22 +455,12 @@ public class MyGame extends VariableFrameRateGame
 
 		prevHeight = currHeight;
 
-		if (isAvatarCollidingObj(prizeList.get(0)))
+		if (isAvatarCollidingObj(prizeItem))
 		{
 			itemHolding += 1;
 			attachNode.toggle();
 		}
-		if (isAvatarCollidingObj(prizeList.get(1)))
-		{
-			itemHolding += 1;
-			attachNode2.toggle();
-		}
-		if (isAvatarCollidingObj(prizeList.get(2)))
-		{
-			itemHolding += 1;
-			attachNode3.toggle();
-		}
-			
+
 		// if (Math.abs(avatar.getLocalLocation().distance(cub.getWorldLocation().x(), cub.getWorldLocation().y(), 
 		// cub.getWorldLocation().z())) <= 2)
 		// {
