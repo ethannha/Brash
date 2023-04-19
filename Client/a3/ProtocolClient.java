@@ -44,7 +44,7 @@ public class ProtocolClient extends GameConnectionClient
 				{	
 					System.out.println("join success confirmed");
 					game.setIsConnected(true);
-					sendCreateMessage(game.getPlayerPosition());
+					sendCreateMessage(game.getGhostDefaultPosition());
 				}
 				if(messageTokens[1].compareTo("failure") == 0)
 				{	

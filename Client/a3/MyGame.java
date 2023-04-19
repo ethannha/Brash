@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Random;
 import java.awt.*;
 import java.awt.event.*;
+import java.beans.VetoableChangeListenerProxy;
 import java.io.*;
 import javax.swing.*;
 
@@ -36,22 +37,20 @@ public class MyGame extends VariableFrameRateGame
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
-	private GameObject cub, avatar, x, y, z, diamond, trapObj, worldPlane, worldTerrain;
-	private ObjShape dolS, cubS, linxS, linyS, linzS, diamondS, trapObjS, ghostS, terrainS;
-	private TextureImage doltx, blueWall, binCollector, bombSkin, oceanTexture, ghostT, hills, grass, prizeTexture;
+	private GameObject cub, avatar, x, y, z, diamond, worldTerrain;
+	private ObjShape avatarS, diamondS, ghostS, terrainS;
+	private TextureImage doltx, ghostT, hills, grass, prizeTexture;
 	private Light light1;
 	private InputManager im;
 	private Camera leftCamera, rightCamera;
 	private CameraOrbitController orbitController;
 	private CameraOverviewController overviewController;
-	private WorldPlane wPlane;
 	private NodeController rotationNode;
 	private AttachController attachNode, attachNode2, attachNode3;
 
 	private int fluffyClouds; //skybox
 
-	private LinkedList<GameObject> diamondList = new LinkedList<>();
-	private LinkedList<GameObject> trapList = new LinkedList<>();
+	private LinkedList<GameObject> prizeList = new LinkedList<>();
 
 	private float currHeight, prevHeight;
 
@@ -101,22 +100,12 @@ public class MyGame extends VariableFrameRateGame
 
 	@Override
 	public void loadShapes()
-	{	dolS = new ImportedModel("player.obj");
+	{	avatarS = new ImportedModel("player.obj");
 		ghostS = new ImportedModel("player.obj");
-		cubS = new Cube();
-		trapObjS = new Sphere();
 		terrainS = new TerrainPlane(1000);
 
-		//Coordinate system
-		linxS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(3f, 0f, 0f));
-		linyS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 3f, 0f));
-		linzS = new Line(new Vector3f(0f, 0f, 0f), new Vector3f(0f, 0f, -3f));
-
 		//Diamond object
-		diamondS = new ImportedModel("crown.obj");//new ManualDiamond();
-
-		//Plane object
-		wPlane = new WorldPlane();
+		diamondS = new ImportedModel("crown.obj");
 
 	}
 
@@ -125,11 +114,7 @@ public class MyGame extends VariableFrameRateGame
 	{
 		doltx = new TextureImage("player_uv.png");
 		ghostT = new TextureImage("ghost_uv.png");
-		blueWall = new TextureImage("BlueWall.png");
 		prizeTexture = new TextureImage("crown2_texture.png");
-		binCollector = new TextureImage("CollectorLogo.png");
-		bombSkin = new TextureImage("BombSkin.png");
-		oceanTexture = new TextureImage("OceanFloor.png");
 		hills = new TextureImage("hill2.png");
 		grass = new TextureImage("grass2.png");
 
@@ -147,31 +132,22 @@ public class MyGame extends VariableFrameRateGame
 	public void buildObjects()
 	{	
 		Matrix4f initialTranslation, initialRotation, initialScale;
+		// initialize scripting engine
+		ScriptEngineManager factory = new ScriptEngineManager();
+		jsEngine = factory.getEngineByName("js");
+		script1 = new File("assets/scripts/initParams.js");
+		this.runScript(script1);
 
-		// build dolphin in the center of the window
-		avatar = new GameObject(GameObject.root(), dolS, doltx);
-		initialTranslation = (new Matrix4f()).translation(-2.0f,0.0f, 2.0f);
+		// build avatar in the center of the window
+		avatar = new GameObject(GameObject.root(), avatarS, doltx);
+		initialTranslation = (new Matrix4f()).translation((float)((double)jsEngine.get("avatarPosX")), (float)((double)jsEngine.get("avatarPosY")), 
+		(float)((double)jsEngine.get("avatarPosZ")));
+
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		avatar.setLocalTranslation(initialTranslation);
 		avatar.setLocalScale(initialScale);
 		initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
 		avatar.setLocalRotation(initialRotation);
-
-		//build cube at the right of the window
-		cub = new GameObject(GameObject.root(), cubS, binCollector);
-		initialTranslation = (new Matrix4f()).translation(2,0,-10);
-		initialScale = (new Matrix4f()).scaling(2.0f);
-		cub.setLocalTranslation(initialTranslation);
-		cub.setLocalScale(initialScale);
-
-		//build X, Y, -Z axis
-		x = new GameObject(GameObject.root(), linxS);
-		y = new GameObject(GameObject.root(), linyS);
-		z = new GameObject(GameObject.root(), linzS);
-		(x.getRenderStates()).setColor(new Vector3f(1f,0,0));
-		(y.getRenderStates()).setColor(new Vector3f(0,1f,0));
-		(z.getRenderStates()).setColor(new Vector3f(0,0,1f));
-
 
 		// build diamond list
 		for (int i = 0; i < 3; i++)
@@ -182,26 +158,8 @@ public class MyGame extends VariableFrameRateGame
 			diamond.setLocalTranslation(initialTranslation);
 			diamond.getRenderStates().hasLighting(true);
 			diamond.setLocalScale(initialScale);
-			diamondList.add(diamond);
+			prizeList.add(diamond);
 		}
-
-		//build trap list
-		for (int i = 0; i < 7; i++)
-		{
-			trapObj = new GameObject(GameObject.root(), trapObjS, bombSkin);
-			initialTranslation = (new Matrix4f()).translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.0f, rand.nextInt(14));
-			initialScale = (new Matrix4f()).scaling(0.25f);
-			trapObj.setLocalTranslation(initialTranslation);
-			trapObj.setLocalScale(initialScale);
-			trapList.add(trapObj);
-		}
-
-		//building World Plane
-		worldPlane = new GameObject(GameObject.root(), wPlane, oceanTexture);
-		initialTranslation = (new Matrix4f()).translation(0.0f, -0.5f, 0.0f);
-		initialScale = (new Matrix4f()).scaling(15.0f);
-		worldPlane.setLocalTranslation(initialTranslation);
-		worldPlane.setLocalScale(initialScale);
 
 		// build world terrain object
 		worldTerrain = new GameObject(GameObject.root(), terrainS, grass);
@@ -245,20 +203,15 @@ public class MyGame extends VariableFrameRateGame
 		attachNode = new AttachController(avatar);
 		attachNode2 = new AttachController(avatar);
 		attachNode3 = new AttachController(avatar);
-		for (int i = 0; i < trapList.size(); i++)
+		for (int i = 0; i < prizeList.size(); i++)
 		{
-			changeLocationByAvatar(trapList.get(i));
-		}
-		for (int i = 0; i < diamondList.size(); i++)
-		{
-			rotationNode.addTarget(diamondList.get(i));
-			changeLocationByAvatar(diamondList.get(i));
-			changeLocationByTrap(diamondList.get(i));
+			rotationNode.addTarget(prizeList.get(i));
+			changeLocationByAvatar(prizeList.get(i));
 		}
 		
-		attachNode.addTarget(diamondList.get(0));
-		attachNode2.addTarget(diamondList.get(1));
-		attachNode3.addTarget(diamondList.get(2));
+		attachNode.addTarget(prizeList.get(0));
+		attachNode2.addTarget(prizeList.get(1));
+		attachNode3.addTarget(prizeList.get(2));
 
 		(engine.getSceneGraph()).addNodeController(rotationNode);
 		(engine.getSceneGraph()).addNodeController(attachNode);
@@ -433,6 +386,14 @@ public class MyGame extends VariableFrameRateGame
 		return avatar.getWorldLocation();
 	}
 
+	public Vector3f getGhostDefaultPosition()
+	{
+		Vector3f ghostPos = new Vector3f((float)((double)jsEngine.get("ghostPosX")), (float)((double)jsEngine.get("ghostPosY")), 
+		(float)((double)jsEngine.get("ghostPosZ")));
+
+		return ghostPos;
+	}
+
 	public float getElapseTime()
 	{
 		return (float)((currFrameTime - lastFrameTime) / 1000.0);
@@ -449,23 +410,6 @@ public class MyGame extends VariableFrameRateGame
 		go.getWorldLocation().z())) < 1.25 && GameObject.root().isObjAlive(go);
 	}
 
-	public void changeLocationByTrap(GameObject go)
-	{
-		Matrix4f initialTranslation;
-		
-		for (int i = 0; i < trapList.size(); i++)
-		{
-			if (Math.abs(go.getLocalLocation().distance(trapList.get(i).getWorldLocation().x(), trapList.get(i).getWorldLocation().y(), 
-			trapList.get(i).getWorldLocation().z())) <= 3.0)
-			{
-				initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 0.0f,  rand.nextInt(14)));
-				go.setLocalTranslation(initialTranslation);
-				changeLocationByAvatar(go);
-				changeLocationByTrap(go);
-			}
-		}
-
-	}
 	public void changeLocationByAvatar(GameObject go)
 	{
 		Matrix4f initialTranslation;
@@ -527,76 +471,52 @@ public class MyGame extends VariableFrameRateGame
 
 		prevHeight = currHeight;
 
-		for (int i = 0; i < trapList.size(); i++)
-		{
-			if (isAvatarCollidingObj(trapList.get(i)))
-			{
-				GameObject.root().removeObj(trapList.get(i));
-				score -= 1;
-				try
-				{
-					player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
-				}
-				catch (ScriptException e1)
-				{
-					System.out.println("ScriptException in " + script2 + "; " + e1);
-				}
-				catch (NoSuchMethodException e2)
-				{
-					System.out.println("No such function/method in " + script2 + "; " + e2);
-				}
-				catch (NullPointerException e3)
-				{
-					System.out.println("Null ptr exception in " + script2 + "; " + e3);
-				}
-			}
-		}
-
-		if (isAvatarCollidingObj(diamondList.get(0)))
+		if (isAvatarCollidingObj(prizeList.get(0)))
 		{
 			itemHolding += 1;
 			attachNode.toggle();
 		}
-		if (isAvatarCollidingObj(diamondList.get(1)))
+		if (isAvatarCollidingObj(prizeList.get(1)))
 		{
 			itemHolding += 1;
 			attachNode2.toggle();
 		}
-		if (isAvatarCollidingObj(diamondList.get(2)))
+		if (isAvatarCollidingObj(prizeList.get(2)))
 		{
 			itemHolding += 1;
 			attachNode3.toggle();
 		}
 			
-		if (Math.abs(avatar.getLocalLocation().distance(cub.getWorldLocation().x(), cub.getWorldLocation().y(), 
-		cub.getWorldLocation().z())) <= 2)
-		{
-			if (itemHolding != 0)
-			{
-				removePrize(attachNode, diamondList.get(0));
-				removePrize(attachNode2, diamondList.get(1));
-				removePrize(attachNode3, diamondList.get(2));
-				score++;
-				try
-				{
-					player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
+		// if (Math.abs(avatar.getLocalLocation().distance(cub.getWorldLocation().x(), cub.getWorldLocation().y(), 
+		// cub.getWorldLocation().z())) <= 2)
+		// {
+		// 	if (itemHolding != 0)
+		// 	{
+		// 		removePrize(attachNode, prizeList.get(0));
+		// 		removePrize(attachNode2, prizeList.get(1));
+		// 		removePrize(attachNode3, prizeList.get(2));
+		// 		score++;
+		// 		try
+		// 		{
+		// 			player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
+		// 			player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
 					
-				}
-				catch (ScriptException e1)
-				{
-					System.out.println("ScriptException in " + script2 + "; " + e1);
-				}
-				catch (NoSuchMethodException e2)
-				{
-					System.out.println("No such function/method in " + script2 + "; " + e2);
-				}
-				catch (NullPointerException e3)
-				{
-					System.out.println("Null ptr exception in " + script2 + "; " + e3);
-				}
-				itemHolding--;
-			}
-		}
+		// 		}
+		// 		catch (ScriptException e1)
+		// 		{
+		// 			System.out.println("ScriptException in " + script2 + "; " + e1);
+		// 		}
+		// 		catch (NoSuchMethodException e2)
+		// 		{
+		// 			System.out.println("No such function/method in " + script2 + "; " + e2);
+		// 		}
+		// 		catch (NullPointerException e3)
+		// 		{
+		// 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
+		// 		}
+		// 		itemHolding--;
+		// 	}
+		// }
 		protClient.processPackets();
 		processNetworking((float)elapsTime);
 	}
