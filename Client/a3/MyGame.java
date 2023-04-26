@@ -22,6 +22,11 @@ import tage.input.action.*;
 import tage.networking.IGameConnection.ProtocolType;
 import tage.nodeControllers.AttachController;
 import tage.nodeControllers.RotationController;
+import tage.physics.PhysicsEngine;
+import tage.physics.PhysicsEngineFactory;
+import tage.physics.PhysicsObject;
+import tage.physics.JBullet.JBulletPhysicsEngine;
+import tage.physics.JBullet.JBulletPhysicsObject;
 import net.java.games.input.*;
 import net.java.games.input.Component.Identifier.*;
 import net.java.games.input.Event;
@@ -71,6 +76,12 @@ public class MyGame extends VariableFrameRateGame
 	// Player
 	private double player1WinCounter;
 	private double player2WinCounter;
+
+	// Physics
+	private PhysicsEngine physicsEngine;
+	private PhysicsObject avatarP, planeP;
+	private boolean running = false;
+	private float vals[] = new float[16];
 
 	public MyGame(String serverAddress, int serverPort, String protocol) 
 	{ 
@@ -129,12 +140,13 @@ public class MyGame extends VariableFrameRateGame
 	@Override
 	public void buildObjects()
 	{	
-		Matrix4f initialTranslation, initialRotation, initialScale;
 		// initialize scripting engine
 		ScriptEngineManager factory = new ScriptEngineManager();
 		jsEngine = factory.getEngineByName("js");
 		script1 = new File("assets/scripts/initParams.js");
 		this.runScript(script1);
+
+		Matrix4f initialTranslation, initialRotation, initialScale;
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarS, doltx);
@@ -147,7 +159,7 @@ public class MyGame extends VariableFrameRateGame
 		initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
 		avatar.setLocalRotation(initialRotation);
 
-		// build diamond list
+		// build prize
 		prizeItem = new GameObject(GameObject.root(), prizeItemS, prizeTexture);
 		initialTranslation = (new Matrix4f().translation(rand.nextInt(14) + (-rand.nextInt(14)), 1.25f, rand.nextInt(14)));
 		initialScale = (new Matrix4f()).scaling(0.25f);
@@ -160,9 +172,8 @@ public class MyGame extends VariableFrameRateGame
 		initialTranslation = (new Matrix4f()).translation(0f,0f,0f);
 		worldTerrain.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(20.0f, 1.0f, 20.0f);
-		worldTerrain.setLocalScale(initialScale);
+		worldTerrain.setLocalScale((initialScale));
 		worldTerrain.setHeightMap(hills);
-
 	}
 
 	@Override
@@ -219,6 +230,32 @@ public class MyGame extends VariableFrameRateGame
 		// ------------- Initialize Update win counter --------------
 		script2 = new File("assets/scripts/updateWinCount.js");
 		this.runScript(script2);
+
+		// ------------ Physics initializing ------------------------
+		String physEngineString = "tage.physics.JBullet.JBulletPhysicsEngine";
+		float[] gravity = {0.0f, -5.0f, 0.0f};
+		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(physEngineString);
+		physicsEngine.initSystem();
+		physicsEngine.setGravity(gravity);
+		
+			// -------------- Create physics world ------------------
+		float mass = 1.0f;
+		float up[] = {0, 1, 0};
+		double[] tempTransform;
+
+		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		avatarP = physicsEngine.addSphereObject(physicsEngine.nextUID(), mass, tempTransform, 0.75f);
+
+		avatarP.setBounciness(1.0f);
+		avatar.setPhysicsObject(avatarP);
+
+		translation = new Matrix4f(worldTerrain.getLocalTranslation());
+		tempTransform = toDoubleArray(translation.get(vals));
+		planeP = physicsEngine.addStaticPlaneObject(physicsEngine.nextUID(), tempTransform, up, 0.0f);
+		planeP.setBounciness(1.0f);
+		worldTerrain.setPhysicsObject(planeP);
+
 		// --------------------- INPUT SECTION -----------------------
 		im = engine.getInputManager();
 		String gpName = im.getFirstGamepadName();
@@ -244,6 +281,23 @@ public class MyGame extends VariableFrameRateGame
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+	}
+
+	@Override
+	public void keyPressed(KeyEvent e)
+	{
+		switch (e.getKeyCode())
+		{
+			case KeyEvent.VK_ESCAPE:
+				System.out.println("CLIENT SEND BYE MESSAGE");
+				protClient.sendByeMessage();
+				this.shutdown();
+				System.exit(0);
+				break;
+			case KeyEvent.VK_SPACE:
+				System.out.println("YOU HIT SPACE");
+				running = !running;
+		}
 	}
 
 	//Networking methods
@@ -275,18 +329,67 @@ public class MyGame extends VariableFrameRateGame
 		}
 	}
 
-	@Override
-	public void keyPressed(KeyEvent e)
+	private void checkForCollisions()
 	{
-		switch (e.getKeyCode())
+		com.bulletphysics.dynamics.DynamicsWorld dynamicsWorld;
+		com.bulletphysics.collision.broadphase.Dispatcher dispatcher;
+		com.bulletphysics.collision.narrowphase.PersistentManifold manifold;
+		com.bulletphysics.dynamics.RigidBody object1, object2;
+		com.bulletphysics.collision.narrowphase.ManifoldPoint contacPoint;
+
+		dynamicsWorld = ((JBulletPhysicsEngine)physicsEngine).getDynamicsWorld();
+		dispatcher = dynamicsWorld.getDispatcher();
+		int manifoldCount =  dispatcher.getNumManifolds();
+		for (int i = 0; i < manifoldCount; i++)
 		{
-			case KeyEvent.VK_ESCAPE:
-				System.out.println("CLIENT SEND BYE MESSAGE");
-				protClient.sendByeMessage();
-				this.shutdown();
-				System.exit(0);
-				break;
+			manifold = dispatcher.getManifoldByIndexInternal(i);
+			object1 = (com.bulletphysics.dynamics.RigidBody)manifold.getBody0();
+			object2 = (com.bulletphysics.dynamics.RigidBody)manifold.getBody1();
+			JBulletPhysicsObject obj1 = JBulletPhysicsObject.getJBulletPhysicsObject(object1);
+			JBulletPhysicsObject obj2 = JBulletPhysicsObject.getJBulletPhysicsObject(object2);
+
+			for (int j = 0; j < manifold.getNumContacts(); j++)
+			{
+				contacPoint = manifold.getContactPoint(j);
+				if (contacPoint.getDistance() < 0.0f)
+				{
+					System.out.println("---- hit between " + obj1 + " and " + obj2);
+					break;
+				}
+			}
+				
+		}	
+	}
+
+	// UTILITY FUNCITON used by physics
+	private float[] toFloatArray(double[] arr)
+	{
+		if (arr == null)
+		{
+			return null;
 		}
+		int n = arr.length;
+		float[] ret = new float[n];
+		for (int i = 0; i < n; i++)
+		{
+			ret[i] = (float)arr[i];
+		}
+		return ret;
+	}
+
+	private double[] toDoubleArray(float[] arr)
+	{
+		if (arr == null)
+		{
+			return null;
+		}
+		int n = arr.length;
+		double[] ret = new double[n];
+		for (int i = 0; i < n; i++)
+		{
+			ret[i] = (double)arr[i];
+		}
+		return ret;
 	}
 
 	public void createViewports()
@@ -459,6 +562,38 @@ public class MyGame extends VariableFrameRateGame
 		{
 			itemHolding += 1;
 			attachNode.toggle();
+		}
+
+		// update physics
+		if (running)
+		{
+			Matrix4f mat = new Matrix4f();
+			Matrix4f mat2 = new Matrix4f().identity();
+			checkForCollisions();
+			physicsEngine.update((float)elapsTime);
+			for (GameObject go:engine.getSceneGraph().getGameObjects())
+			{
+				if (go.getPhysicsObject() != null)
+				{
+					mat.set(toFloatArray(go.getPhysicsObject().getTransform()));
+					mat2.set(3, 0, mat.m30());
+					mat2.set(3, 1, mat.m31());
+					mat2.set(3, 2, mat.m32());
+					go.setLocalTranslation(mat2);
+				}
+			}
+		}
+
+		// Script checking if modified
+		long modTime = script1.lastModified();
+		if (modTime > fileLastModified)
+		{
+			fileLastModified =  modTime;
+			this.runScript(script1);
+			Matrix4f initialTranslation = (new Matrix4f()).translation((float)((double)jsEngine.get("avatarPosX")), (float)((double)jsEngine.get("avatarPosY")), 
+			(float)((double)jsEngine.get("avatarPosZ")));
+			avatar.setLocalTranslation(initialTranslation);
+
 		}
 
 		// if (Math.abs(avatar.getLocalLocation().distance(cub.getWorldLocation().x(), cub.getWorldLocation().y(), 
