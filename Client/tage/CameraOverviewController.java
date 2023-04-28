@@ -1,5 +1,4 @@
-package a3;
-
+package tage;
 import org.joml.Vector3f;
 
 import net.java.games.input.Event;
@@ -13,7 +12,6 @@ import java.lang.Math;
 
 public class CameraOverviewController 
 {
-    private MyGame game;
     private Engine engine;
     private Camera camera;                 // The camera being controlled
     private GameObject avatar;          // The target avatar the camera looks at
@@ -21,9 +19,8 @@ public class CameraOverviewController
     private float cameraTranslationZ;      // Elevation of camera above target
     private float cameraRadius;         // Distance between camera and target
     
-    public CameraOverviewController(MyGame g, Camera cam, GameObject av, String gpName, Engine e)
+    public CameraOverviewController(Camera cam, GameObject av, String gpName, Engine e)
     {
-        game = g;
         engine = e;
         camera = cam;
         avatar = av;
@@ -69,7 +66,7 @@ public class CameraOverviewController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -game.getElapseTime();
+                rotAmount = -0.5f;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -79,7 +76,7 @@ public class CameraOverviewController
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = game.getElapseTime();
+                    rotAmount = 0.5f;
                 }
                 else
                 {
@@ -100,7 +97,7 @@ public class CameraOverviewController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -game.getElapseTime();
+                rotAmount = -0.5f;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -124,13 +121,13 @@ public class CameraOverviewController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -game.getElapseTime();
+                rotAmount = -0.5f;
             }
             else
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = game.getElapseTime();
+                    rotAmount = 0.5f;
                 }
                 else
                 {
@@ -150,7 +147,7 @@ public class CameraOverviewController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -game.getElapseTime();
+                rotAmount = -0.5f;
             }
             else
             {
@@ -170,13 +167,13 @@ public class CameraOverviewController
             float eleAmount;
             if (evt.getValue() < -0.2)
             {
-                eleAmount = -game.getElapseTime();
+                eleAmount = -0.5f;
             }
             else
             {
                 if (evt.getValue() > 0.2)
                 {
-                    eleAmount = game.getElapseTime();
+                    eleAmount = 0.5f;
                 }
                 else
                 {
@@ -197,7 +194,7 @@ public class CameraOverviewController
             float eleAmount;
             if (evt.getValue() > 0.2)
             {
-                eleAmount = -game.getElapseTime();
+                eleAmount = -0.5f;
             }
             else
             {

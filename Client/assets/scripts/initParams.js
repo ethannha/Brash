@@ -3,8 +3,8 @@ var p1Win = 0;
 var p2Win = 0;
 
 // Avatar
-var avatarPosX = -4.0;
-var avatarPosY = 1.0;
+var avatarPosX = -8.0;
+var avatarPosY = 0.0;
 var avatarPosZ = 2.0;
 
 // Ghost

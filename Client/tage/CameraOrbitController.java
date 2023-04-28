@@ -1,5 +1,4 @@
-package a3;
-
+package tage;
 import org.joml.Vector3f;
 
 import net.java.games.input.Event;
@@ -13,7 +12,6 @@ import java.lang.Math;
 
 public class CameraOrbitController 
 {
-    private MyGame game;
     private Engine engine;
     private Camera camera;                 // The camera being controlled
     private GameObject avatar;          // The target avatar the camera looks at
@@ -21,9 +19,8 @@ public class CameraOrbitController
     private float cameraElevation;      // Elevation of camera above target
     private float cameraRadius;         // Distance between camera and target
     
-    public CameraOrbitController(MyGame g, Camera cam, GameObject av, String gpName, Engine e)
+    public CameraOrbitController(Camera cam, GameObject av, String gpName, Engine e)
     {
-        game = g;
         engine = e;
         camera = cam;
         avatar = av;
@@ -89,13 +86,13 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -0.2f;
+                rotAmount = -0.5f;
             }
             else
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = 0.2f;
+                    rotAmount = 0.5f;
                 }
                 else
                 {
@@ -116,7 +113,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -0.2f;
+                rotAmount = -0.5f;
             }
             else
             {
@@ -136,7 +133,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -0.2f;
+                rotAmount = -0.5f;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -146,7 +143,7 @@ public class CameraOrbitController
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = 0.2f;
+                    rotAmount = 0.5f;
                 }
                 else
                 {
@@ -167,7 +164,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -0.2f;
+                rotAmount = -0.5f;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -194,7 +191,7 @@ public class CameraOrbitController
             
             if (evt.getValue() < -0.2)
             {
-                eleAmount = -0.2f;
+                eleAmount = -0.5f;
                 if (cameraElevation <= 1.0f)
                 {
                     eleAmount = 0.0f;
@@ -204,7 +201,7 @@ public class CameraOrbitController
             {
                 if (evt.getValue() > 0.2)
                 {
-                    eleAmount = 0.2f;
+                    eleAmount = 0.5f;
                 }
                 else
                 {
@@ -226,7 +223,7 @@ public class CameraOrbitController
             float eleAmount;
             if (evt.getValue() > 0.2)
             {
-                eleAmount = -0.2f;
+                eleAmount = -0.5f;
                 if (cameraElevation <= 1.0f)
                 {
                     eleAmount = 0.0f;

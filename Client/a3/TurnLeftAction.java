@@ -18,5 +18,8 @@ public class TurnLeftAction extends AbstractInputAction
     {
         game.getAvatar().turnObjLeft(e, game.getElapseTime());
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
+
+        game.updateAvatarPhysicsObject();
+        System.out.println("UPDATING PHYSICS OBJECT MOVE LEFT");
     }
 }

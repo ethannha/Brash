@@ -18,5 +18,8 @@ public class TurnRightAction extends AbstractInputAction
     {
         game.getAvatar().turnObjRight(e, game.getElapseTime());
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
+
+        game.updateAvatarPhysicsObject();
+        System.out.println("UPDATING PHYSICS OBJECT MOVE RIGHT");
     }
 }
