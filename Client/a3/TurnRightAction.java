@@ -20,6 +20,6 @@ public class TurnRightAction extends AbstractInputAction
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
 
         game.updateAvatarPhysicsObject();
-        System.out.println("UPDATING PHYSICS OBJECT MOVE RIGHT");
+        //System.out.println("UPDATING PHYSICS OBJECT MOVE RIGHT");
     }
 }

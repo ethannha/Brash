@@ -22,7 +22,7 @@ public class FwdAction extends AbstractInputAction
         game.getAvatarAnimatedShape().playAnimation("RUN", 0.75f, AnimatedShape.EndType.NONE, 0);
 
         game.updateAvatarPhysicsObject();
-        System.out.println("UPDATING PHYSICS OBJECT MOVE FORWARD");
+        //System.out.println("UPDATING PHYSICS OBJECT MOVE FORWARD");
 
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }   

@@ -50,8 +50,6 @@ public class MyGame extends VariableFrameRateGame
 
 	private float currHeight, prevHeight;
 
-	private Random rand = new Random();
-
 	// Ghost and Connection
 	private GhostManager gm;
 	private String serverAddress;
@@ -78,6 +76,11 @@ public class MyGame extends VariableFrameRateGame
 
 	// Animation
 	private AnimatedShape avatarAnimatedShape;
+
+	// NPC/AI
+	private ObjShape npcShape;
+	private TextureImage npcTex;
+
 
 	public MyGame(String serverAddress, int serverPort, String protocol) 
 	{ 
@@ -111,6 +114,7 @@ public class MyGame extends VariableFrameRateGame
 		avatarAnimatedShape.loadAnimation("RUN", "player_run.rka");
 		avatarAnimatedShape.loadAnimation("IDLE", "player_idle.rka");
 		ghostS = new ImportedModel("player.obj");
+		npcShape = new ImportedModel("player.obj");
 		terrainS = new TerrainPlane(1000);
 
 		//Diamond object
@@ -128,6 +132,7 @@ public class MyGame extends VariableFrameRateGame
 		hills = new TextureImage("hill2.png");
 		grass = new TextureImage("grass2.png");
 		boxTexture = new TextureImage("BlueWall.png");
+		npcTex = new TextureImage("player_uv.png");
 
 	}
 
@@ -245,7 +250,7 @@ public class MyGame extends VariableFrameRateGame
 
 		// ------------ Physics initializing ------------------------
 		String physEngineString = "tage.physics.JBullet.JBulletPhysicsEngine";
-		float[] gravity = {0.0f, -5.0f, 0.0f};
+		float[] gravity = {0.0f, (float)((double)jsEngine.get("gravityY")), 0.0f};
 		physicsEngine = PhysicsEngineFactory.createPhysicsEngine(physEngineString);
 		physicsEngine.initSystem();
 		physicsEngine.setGravity(gravity);
@@ -253,7 +258,7 @@ public class MyGame extends VariableFrameRateGame
 		// -------------- Create physics world ------------------
 		float mass = 1.0f;
 		float up[] = {0, 1, 0};
-		float size[] = {0.5f, 1.0f, 0.5f};
+		float size[] = {avatar.getLocalUpVector().x(), avatar.getLocalUpVector().y(), avatar.getLocalUpVector().z()};
 		double[] tempTransform;
 
 		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
@@ -361,6 +366,7 @@ public class MyGame extends VariableFrameRateGame
 			for (int j = 0; j < manifold.getNumContacts(); j++)
 			{
 				contacPoint = manifold.getContactPoint(j);
+				System.out.println("DISTANCE: " + contacPoint.getDistance());
 				if (contacPoint.getDistance() < 0.0f)
 				{
 					System.out.println("---- hit between " + obj1 + " and " + obj2);
@@ -368,34 +374,15 @@ public class MyGame extends VariableFrameRateGame
 					break;
 				}
 			}
-		}	
+		}
 	}
 
 	public void updateAvatarPhysicsObject()
 	 {
-		// TAKING INTO ACCOUNT ROTATION 
-		// STILL NEED FIXING
 		double[] tempTransform;
-		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
-		Matrix4f rotationMatrix = avatar.getLocalRotation();
-    
-		// Convert the rotation matrix to a quaternion
-		Quaternionf rotation = new Quaternionf();
-		rotation.setFromNormalized(rotationMatrix);
-		
-		// Create a transform matrix from the translation and rotation
-		Matrix4f transform = new Matrix4f();
-		transform.set(rotation.get(new Matrix4f()));
-		transform.setTranslation(translation.m30(), translation.m31(), translation.m32());
+		Matrix4f translation = new Matrix4f(avatar.getWorldTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		avatarP.setTransform(tempTransform);
-
-		//OTHER WAY VVVVVVV
-
-		// double[] tempTransform;
-		// Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
-		// tempTransform = toDoubleArray(translation.get(vals));
-		// avatarP.setTransform(tempTransform);
 	}
 
 	// UTILITY FUNCITON used by physics
@@ -496,6 +483,16 @@ public class MyGame extends VariableFrameRateGame
 	public GhostManager getGhostManager()
 	{
 		return gm;
+	}
+
+	public ObjShape getNPCShape()
+	{
+		return npcShape;
+	}
+
+	public TextureImage getNPCTexture()
+	{
+		return npcTex;
 	}
 
 	public Engine getEngine()
@@ -622,37 +619,36 @@ public class MyGame extends VariableFrameRateGame
 			avatar.setLocalTranslation(initialTranslation);
 
 		}
+		//System.out.println("AVATARP TRANSFORM: " + toFloatArray(avatarP.getTransform())[12] + ", " + toFloatArray(avatarP.getTransform())[13] + ", " + toFloatArray(avatarP.getTransform())[14]);
 
-		// if (Math.abs(avatar.getLocalLocation().distance(cub.getWorldLocation().x(), cub.getWorldLocation().y(), 
-		// cub.getWorldLocation().z())) <= 2)
-		// {
-		// 	if (itemHolding != 0)
-		// 	{
-		// 		removePrize(attachNode, prizeList.get(0));
-		// 		removePrize(attachNode2, prizeList.get(1));
-		// 		removePrize(attachNode3, prizeList.get(2));
-		// 		score++;
-		// 		try
-		// 		{
-		// 			player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
-		// 			player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
+		if (Math.abs(avatar.getLocalLocation().distance(boxObject.getWorldLocation().x(), boxObject.getWorldLocation().y(), 
+		boxObject.getWorldLocation().z())) <= 2)
+		{
+			if (itemHolding != 0)
+			{
+				removePrize(attachNode, prizeItem);
+				score++;
+				try
+				{
+					player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
+					//player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
 					
-		// 		}
-		// 		catch (ScriptException e1)
-		// 		{
-		// 			System.out.println("ScriptException in " + script2 + "; " + e1);
-		// 		}
-		// 		catch (NoSuchMethodException e2)
-		// 		{
-		// 			System.out.println("No such function/method in " + script2 + "; " + e2);
-		// 		}
-		// 		catch (NullPointerException e3)
-		// 		{
-		// 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
-		// 		}
-		// 		itemHolding--;
-		// 	}
-		// }
+				}
+				catch (ScriptException e1)
+				{
+					System.out.println("ScriptException in " + script2 + "; " + e1);
+				}
+				catch (NoSuchMethodException e2)
+				{
+					System.out.println("No such function/method in " + script2 + "; " + e2);
+				}
+				catch (NullPointerException e3)
+				{
+					System.out.println("Null ptr exception in " + script2 + "; " + e3);
+				}
+				itemHolding--;
+			}
+		}
 		protClient.processPackets();
 		processNetworking((float)elapsTime);
 	}

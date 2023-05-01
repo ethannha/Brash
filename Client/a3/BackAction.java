@@ -22,7 +22,7 @@ public class BackAction extends AbstractInputAction
         game.getAvatarAnimatedShape().playAnimation("RUN", 0.75f, AnimatedShape.EndType.NONE, 0);
 
         game.updateAvatarPhysicsObject();
-        System.out.println("UPDATING PHYSICS OBJECT MOVE BACKWARD");
+        //System.out.println("UPDATING PHYSICS OBJECT MOVE BACKWARD");
 
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }   
