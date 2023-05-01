@@ -495,6 +495,14 @@ public class MyGame extends VariableFrameRateGame
 		return npcTex;
 	}
 
+	public Vector3f getNPCDefaultPosition()
+	{
+		Vector3f ghostPos = new Vector3f((float)((double)jsEngine.get("npcPosX")), (float)((double)jsEngine.get("npcPosY")), 
+		(float)((double)jsEngine.get("npcPosZ")));
+
+		return ghostPos;
+	}
+
 	public Engine getEngine()
 	{
 		return engine;

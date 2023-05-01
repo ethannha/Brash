@@ -27,7 +27,7 @@ public class GhostNPC extends GameObject
         }
         else
         {
-            this.setLocalScale((new Matrix4f()).scaling(1.0f));
+            this.setLocalScale((new Matrix4f()).scaling(3.0f));
         }
     }
 

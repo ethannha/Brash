@@ -89,7 +89,22 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			{
 				System.out.println("Server got a needNPC message");
 				UUID clientID = UUID.fromString(messageTokens[1]);
-				sendNPCstartMsg(clientID);
+				sendNPCstart(clientID);
+			}
+
+			if (messageTokens[0].compareTo("startNPC") == 0)
+			{
+				System.out.print("SERVER RECEIVE MESSAGE FROM CLIENT THAT IT WANTS TO START NPC");
+				UUID npcID = UUID.fromString(messageTokens[1]);
+				sendNPCstart(npcID);
+			}
+
+			if (messageTokens[0].compareTo("createNPC") == 0)
+			{
+				System.out.print("SERVER RECEIVE MESSAGE FROM CLIENT THAT IT CREATED NPC");
+				UUID npcID = UUID.fromString(messageTokens[1]);
+				String[] pos = {messageTokens[2], messageTokens[3], messageTokens[4]};
+				sendCreateNPCmsg(npcID, pos);
 			}
 
 			// Case where server receies notice that an avatar is close to the NPC
@@ -103,12 +118,6 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			if (messageTokens[0].compareTo("npcinfo") == 0)
 			{
 				System.out.println("SERVER GOT NPCINFOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
-			}
-
-			if (messageTokens[0].compareTo("startNPC") == 0)
-			{
-				System.out.print("SERVER RECEIVE MESSAGE FROM CLIENT THAT IT WANTS TO START NPC");
-				UUID clientID = UUID.fromString(messageTokens[1]);
 			}
 		}
 	}
@@ -278,7 +287,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
             e.printStackTrace();
         }
     }
-    public void sendNPCstartMsg(UUID clientID)
+    public void sendNPCstart(UUID clientID)
     {
         try
         {

@@ -118,39 +118,32 @@ public class ProtocolClient extends GameConnectionClient
 			if (messageTokens[0].compareTo("createNPC") == 0)
 			{
 				// creating a new ghost npc
+				UUID npcID = UUID.fromString(messageTokens[1]);
 				// Parse out the position
-				Vector3f ghostPosition = new Vector3f(
-					Float.parseFloat(messageTokens[2]),
-					Float.parseFloat(messageTokens[3]),
-					Float.parseFloat(messageTokens[4])
-				);
-
-				System.out.println("X = " + ghostPosition.x() + " Y = " + ghostPosition.y() + " Z = " + ghostPosition.x());
-
+				System.out.println("MAKING NPC");
 				try
 				{
-					createGhostNPC(ghostPosition);
+					createGhostNPC(game.getNPCDefaultPosition());
 				}
 				catch (IOException e) {
 					System.out.println("CREATING GHOST NPC GONE WRONGGGGGGGGGGGGGGGGGGGGG");
 					e.printStackTrace();
 				}
+				sendNPCCreateMessage(npcID, ghostNPC.getLocalLocation());
 			}
 
 			if (messageTokens[0].compareTo("npcinfo") == 0)
 			{
 
-				//System.out.println("CLIENT GETTING NPC INFO FROM SERVER");
-				// Vector3f ghostNPCPosition = new Vector3f(
-				// 	Float.parseFloat(messageTokens[1]),
-				// 	Float.parseFloat(messageTokens[2]),
-				// 	Float.parseFloat(messageTokens[3])
-				// );
-
+				System.out.println("CLIENT GETTING NPC INFO FROM SERVER");
+				Vector3f ghostNPCPosition = new Vector3f(
+					Float.parseFloat(messageTokens[1]),
+					Float.parseFloat(messageTokens[2]),
+					Float.parseFloat(messageTokens[3])
+				);
 				
-				// ghostNPC.setPosition(ghostNPCPosition);
-				// System.out.println("Successful updated ghost info ---------------------------");
-
+				updateGhostNPC(ghostNPCPosition, 1.0f);
+				System.out.println("Successful updated ghost info ---------------------------");
 			}
 		}
 	}
@@ -285,6 +278,22 @@ public class ProtocolClient extends GameConnectionClient
 			gs = true;
 		}
 		ghostNPC.setSize(gs);
+	}
+
+	public void sendNPCCreateMessage(UUID npcID, Vector3f position)
+	{	
+		try 
+		{	
+			String message = new String("createNPC," + npcID.toString());
+			message += "," + position.x();
+			message += "," + position.y();
+			message += "," + position.z();
+			sendPacket(message);
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
+		}	
 	}
 
 	public void sendNPCinfo(Vector3f position)

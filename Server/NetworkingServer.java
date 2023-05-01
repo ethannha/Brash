@@ -7,7 +7,6 @@ public class NetworkingServer
 	private GameServerTCP thisTCPServer;
 
 	// NPC / AI
-	private GameAIServerUDP UDPServer;
 	private NPCcontroller npcCtrl;
 
 	public NetworkingServer(int serverPort, String protocol) 
@@ -21,7 +20,6 @@ public class NetworkingServer
 			else
 			{	
 				thisUDPServer = new GameServerUDP(serverPort, npcCtrl);
-				//UDPServer = new GameAIServerUDP(serverPort, npcCtrl);
 			}
 		}
 		catch (IOException e) 

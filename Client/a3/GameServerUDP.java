@@ -79,6 +79,14 @@ public class GameServerUDP extends GameConnectionServer<UUID>
             // // NPC/AI
             
             // Case where server receives a CREATE NPC message
+
+            if (msgTokens[0].compareTo("startNPC") == 0)
+            {
+                System.out.println("STARTING NPC");
+                UUID clientID = UUID.fromString(msgTokens[1]);
+                sendNPCstart(clientID);
+            }
+
             if (msgTokens[0].compareTo("createNPC") == 0)
             {
                 System.out.println("CREATTING NPCCCCCCCCCCCCCCCCCCC");
@@ -188,18 +196,18 @@ public class GameServerUDP extends GameConnectionServer<UUID>
         }
     }
 
-    // public void sendNPCstart(UUID clientID)
-    // {
-    //     try
-    //     {
-    //         String message = new String("createNPC, " + clientID);
-    //         forwardPacketToAll(message, clientID);
-    //     }
-    //     catch (IOException e)
-    //     {
-    //         e.printStackTrace();
-    //     }
-    // }
+    public void sendNPCstart(UUID clientID)
+    {
+        try
+        {
+            String message = new String("createNPC, " + clientID);
+            forwardPacketToAll(message, clientID);
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+        }
+    }
 
     public void sendCreateNPCmsg(UUID clientID, String[] position)
     {
