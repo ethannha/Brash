@@ -1,1 +1,1 @@
-java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 a3.MyGame 130.86.181.150 6010 UDP
+java -Dsun.java2d.d3d=false -Dsun.java2d.uiScale=1 a3.MyGame 10.117.254.167 6010 UDP

@@ -36,7 +36,7 @@ public class MyGame extends VariableFrameRateGame
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
-	private GameObject avatar, x, y, z, prizeItem, worldTerrain, boxObject;
+	private GameObject avatar, prizeItem, worldTerrain, boxObject;
 	private ObjShape avatarS, prizeItemS, ghostS, terrainS, boxS;
 	private TextureImage avatarT, ghostT, hills, grass, prizeTexture, boxTexture;
 	private Light light1;
@@ -354,11 +354,9 @@ public class MyGame extends VariableFrameRateGame
 		TurnRightAction turnRightAction = new TurnRightAction(this, protClient);
 		GamePadTurn gamePadTurn = new GamePadTurn(this);
 		GamePadAction gamePadAction = new GamePadAction(this);
-		ToggleAxis toggleAxis = new ToggleAxis(x, y, z);
 		//ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
 		JumpAction jumpAction = new JumpAction(this, physicsEngine, avatarP);
 
-		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.TAB, toggleAxis, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.W, fwdAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, backAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, turnLeftAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);

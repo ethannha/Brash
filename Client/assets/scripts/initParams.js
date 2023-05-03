@@ -17,5 +17,5 @@ var gravityY = -5.0;
 
 // NPC/AI
 var npcPosX = 3.0;
-var npcPosY = 0.0;
+var npcPosY = 1.5;
 var npcPosZ = -2.0;
