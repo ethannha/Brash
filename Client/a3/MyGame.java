@@ -13,7 +13,7 @@ import java.io.*;
 import org.joml.*;
 
 import tage.CameraOrbitController;
-
+import tage.audio.*;
 import tage.input.*;
 import tage.input.action.*;
 import tage.networking.IGameConnection.ProtocolType;
@@ -45,6 +45,8 @@ public class MyGame extends VariableFrameRateGame
 	private CameraOrbitController orbitController;
 	private NodeController rotationNode;
 	private AttachController attachNode;
+	private IAudioManager audioMgr;
+	private Sound bgmSound, grassSound, collectSound, hitSound, jumpSound, deathSound;
 
 	private int fluffyClouds; //skybox
 
@@ -113,6 +115,10 @@ public class MyGame extends VariableFrameRateGame
 		avatarAnimatedShape = new AnimatedShape("player.rkm", "player.rks");
 		avatarAnimatedShape.loadAnimation("RUN", "player_run.rka");
 		avatarAnimatedShape.loadAnimation("IDLE", "player_idle.rka");
+		avatarAnimatedShape.loadAnimation("BACK", "player_backwalk.rka");
+		avatarAnimatedShape.loadAnimation("JUMP", "player_jump.rka");
+		avatarAnimatedShape.loadAnimation("PUNCHL", "player_punchL.rka");
+		avatarAnimatedShape.loadAnimation("PUNCHR", "player_punchR.rka");
 		ghostS = new ImportedModel("player.obj");
 		npcShape = new ImportedModel("player.obj");
 		terrainS = new TerrainPlane(1000);
@@ -161,7 +167,7 @@ public class MyGame extends VariableFrameRateGame
 		initialTranslation = (new Matrix4f()).translation((float)((double)jsEngine.get("avatarPosX")), (float)((double)jsEngine.get("avatarPosY")), 
 		(float)((double)jsEngine.get("avatarPosZ")));
 
-		initialScale = (new Matrix4f()).scaling(0.5f);
+		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalTranslation(initialTranslation);
 		avatar.setLocalScale(initialScale);
 		initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
@@ -203,6 +209,66 @@ public class MyGame extends VariableFrameRateGame
 		(engine.getSceneGraph()).addLight(light1);
 	}
 
+	public void initAudio()
+	{ 
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
+		audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
+		if (!audioMgr.initialize()) { 
+			System.out.println("Audio Manager failed to initialize!");
+			return;
+		}
+		resource1 = audioMgr.createAudioResource("assets/sounds/bgm.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource2 = audioMgr.createAudioResource("assets/sounds/grass.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource3 = audioMgr.createAudioResource("assets/sounds/collect.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource4 = audioMgr.createAudioResource("assets/sounds/hit.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource5 = audioMgr.createAudioResource("assets/sounds/jump.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource6 = audioMgr.createAudioResource("assets/sounds/death.wav", AudioResourceType.AUDIO_SAMPLE);
+
+		bgmSound = new Sound(resource1, SoundType.SOUND_EFFECT, 50, true);
+		grassSound = new Sound(resource2, SoundType.SOUND_EFFECT, 50, true);
+		collectSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, false);
+		hitSound = new Sound(resource4, SoundType.SOUND_EFFECT, 100, false);
+		jumpSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
+		deathSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
+		
+		bgmSound.initialize(audioMgr);
+
+		grassSound.initialize(audioMgr);
+		grassSound.setMaxDistance(10.0f);
+		grassSound.setMinDistance(0.5f);
+		grassSound.setRollOff(5.0f);
+		grassSound.setLocation(avatar.getWorldLocation());
+		
+		hitSound.initialize(audioMgr);
+		hitSound.setMaxDistance(10.0f);
+		hitSound.setMinDistance(0.5f);
+		hitSound.setRollOff(5.0f);
+		hitSound.setLocation(avatar.getWorldLocation());
+
+		jumpSound.initialize(audioMgr);
+		jumpSound.setLocation(avatar.getWorldLocation());
+
+		deathSound.initialize(audioMgr);
+		deathSound.setLocation(avatar.getWorldLocation());
+		
+		collectSound.initialize(audioMgr);
+		collectSound.setMaxDistance(10.0f);
+		collectSound.setMinDistance(0.5f);
+		collectSound.setRollOff(5.0f);
+		collectSound.setLocation(prizeItem.getWorldLocation());
+
+		setEarParameters();
+		bgmSound.play();
+	}
+
+	public void setEarParameters()
+	{
+		Camera camera = (engine.getRenderSystem()).getViewport("MAIN").getCamera();
+		audioMgr.getEar().setLocation(avatar.getWorldLocation());
+		audioMgr.getEar().setOrientation(camera.getN(), new Vector3f(0.0f, 1.0f, 0.0f));
+	}
+
+
 	@Override
 	public void initializeGame()
 	{	
@@ -220,6 +286,9 @@ public class MyGame extends VariableFrameRateGame
 		jsEngine = factory.getEngineByName("js");
 
 		invocableEngine = (Invocable)jsEngine;
+
+		// initialize sounds
+		initAudio();
 
 		// -------------- Node Controllers --------------------------
 		rotationNode = new RotationController(engine, new Vector3f(0.0f, 1.0f, 0.0f), 0.001f);
@@ -302,10 +371,62 @@ public class MyGame extends VariableFrameRateGame
 	}
 
 	@Override
+	public void keyReleased(KeyEvent e) {
+        switch (e.getKeyCode())
+		{
+			case KeyEvent.VK_W:
+				avatarAnimatedShape.stopAnimation();
+				grassSound.stop();
+				break;
+			case KeyEvent.VK_S:
+				avatarAnimatedShape.stopAnimation();
+				grassSound.stop();
+				break;
+			case KeyEvent.VK_F:
+				avatarAnimatedShape.stopAnimation();
+				break;
+			case KeyEvent.VK_SPACE:
+				avatarAnimatedShape.stopAnimation();
+				break;
+		}
+    }
+
+	@Override
 	public void keyPressed(KeyEvent e)
 	{
 		switch (e.getKeyCode())
 		{
+			case KeyEvent.VK_W:
+				if (!avatarAnimatedShape.isPlayingAnimation("RUN")) {
+					grassSound.play();
+					avatarAnimatedShape.stopAnimation();
+					avatarAnimatedShape.playAnimation("RUN", 0.2f, AnimatedShape.EndType.LOOP, 0);
+				}
+				break;
+			case KeyEvent.VK_S:
+				if (!avatarAnimatedShape.isPlayingAnimation("BACK")) {
+					grassSound.play();
+					avatarAnimatedShape.stopAnimation();
+					avatarAnimatedShape.playAnimation("BACK", 0.2f, AnimatedShape.EndType.LOOP, 0);
+				}
+				break;
+			case KeyEvent.VK_F:
+				if (!avatarAnimatedShape.isPlayingAnimation("PUNCHL")) {
+					avatarAnimatedShape.stopAnimation();
+					avatarAnimatedShape.playAnimation("PUNCHL", 0.5f, AnimatedShape.EndType.LOOP, 0);
+				}
+				hitSound.play();
+				break;
+			case KeyEvent.VK_H:
+				deathSound.play();
+				break;
+			case KeyEvent.VK_SPACE:
+				if (!avatarAnimatedShape.isPlayingAnimation("JUMP")) {
+					avatarAnimatedShape.stopAnimation();
+					avatarAnimatedShape.playAnimation("JUMP", 0.2f, AnimatedShape.EndType.LOOP, 0);
+				}
+				jumpSound.play();
+				break;
 			case KeyEvent.VK_ESCAPE:
 				System.out.println("CLIENT SEND BYE MESSAGE");
 				protClient.sendByeMessage();
@@ -428,7 +549,7 @@ public class MyGame extends VariableFrameRateGame
 		Viewport mainVp = (engine.getRenderSystem()).getViewport("MAIN");
 		mainCamera = mainVp.getCamera();
 
-		mainCamera.setLocation(new Vector3f(-2.0f, 0.0f, 2.0f));
+		mainCamera.setLocation(new Vector3f(-5.0f, 0.0f, 5.0f));
 		mainCamera.setU(new Vector3f(1.0f, 0.0f, 0.0f));
 		mainCamera.setV(new Vector3f(0.0f, 1.0f, 0.0f));
 		mainCamera.setN(new Vector3f(0.0f, 0.0f, -1.0f));
@@ -560,6 +681,14 @@ public class MyGame extends VariableFrameRateGame
 		currFrameTime = System.currentTimeMillis();
 		elapsTime += (currFrameTime - lastFrameTime) / 1000.0;
 
+		// update sound
+		grassSound.setLocation(avatar.getWorldLocation());
+		hitSound.setLocation(avatar.getWorldLocation());
+		jumpSound.setLocation(avatar.getWorldLocation());
+		deathSound.setLocation(avatar.getWorldLocation());
+		collectSound.setLocation(prizeItem.getWorldLocation());
+		setEarParameters();
+
 		// build and set HUD
 		int elapsTimeSec = Math.round((float)elapsTime);
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
@@ -594,6 +723,7 @@ public class MyGame extends VariableFrameRateGame
 		{
 			itemHolding += 1;
 			attachNode.toggle();
+			collectSound.play();
 		}
 
 		// update physics
