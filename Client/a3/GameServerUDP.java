@@ -76,6 +76,14 @@ public class GameServerUDP extends GameConnectionServer<UUID>
                 sendMoveMessage(clientID, pos);
             }
 
+            if (msgTokens[0].compareTo("rotate") == 0)
+            {
+                //System.out.println("================================== CLIENT ROTATING: " + msgTokens[2] + ", " + msgTokens[3] + ", " + msgTokens[4] + ", " + msgTokens[5]);
+                UUID clientID = UUID.fromString(msgTokens[1]);
+                String[] pos = {msgTokens[2], msgTokens[3], msgTokens[4], msgTokens[5]};
+                sendRotateMessage(clientID, pos);
+            }
+
             // // NPC/AI
             
             // Case where server receives a CREATE NPC message
@@ -175,6 +183,24 @@ public class GameServerUDP extends GameConnectionServer<UUID>
             message += "," + position[0];
             message += "," + position[1];
             message += "," + position[2];
+            forwardPacketToAll(message, clientID);
+        } 
+        catch (IOException e) 
+        {
+            e.printStackTrace();
+        }
+    }
+
+    public void sendRotateMessage(UUID clientID, String[] rotatePos)
+    {
+        try 
+        {
+            String message = new String("rotate, " + clientID);
+            message += "," + rotatePos[0];
+            message += "," + rotatePos[1];
+            message += "," + rotatePos[2];
+            message += "," + rotatePos[3];
+            //System.out.println("================================ CLIENT MESSAGE: " + message);
             forwardPacketToAll(message, clientID);
         } 
         catch (IOException e) 

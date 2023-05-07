@@ -114,6 +114,22 @@ public class ProtocolClient extends GameConnectionClient
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition);
 			}
 
+			if (messageTokens[0].compareTo("rotate") == 0)
+			{
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+
+				//System.out.println("==================================== IN PACKET: " + messageTokens[2] + ", " + messageTokens[3] + ", " + messageTokens[4] + ", " 
+				//+ messageTokens[5]);
+				AxisAngle4f ghostRotMat = new AxisAngle4f(
+									Float.parseFloat(messageTokens[2]), Float.parseFloat(messageTokens[3]), 
+									Float.parseFloat(messageTokens[4]), Float.parseFloat(messageTokens[5]));
+
+				Matrix4f ghostRotation = new Matrix4f();
+				ghostRotation.rotation(ghostRotMat);
+
+				ghostManager.updateGhostAvatarRotation(ghostID, ghostRotation);
+			}
+
 			// HANDLING GHOST NPC ============================================
 			if (messageTokens[0].compareTo("createNPC") == 0)
 			{
@@ -143,7 +159,7 @@ public class ProtocolClient extends GameConnectionClient
 				);
 				
 				updateGhostNPC(ghostNPCPosition, 1.0f);
-				System.out.println("Successful updated ghost info ---------------------------");
+				//System.out.println("Successful updated ghost info ---------------------------");
 			}
 		}
 	}
@@ -244,6 +260,33 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 	
+
+	// Informs the server that the local avatar has changed position.  
+	// Message Format: (move,localId,x,y,z) where x, y, and z represent the position.
+
+	public void sendRotateMessage(Matrix4f rotation)
+	{
+
+		AxisAngle4f rotMatrix = new AxisAngle4f();
+		rotation.getRotation(rotMatrix);
+
+		//System.out.println("==================================== ROTATION: " + rotMatrix.angle + ", " + rotMatrix.x + ", " + rotMatrix.y + ", " + rotMatrix.z);
+		try 
+		{	
+			String message = new String("rotate," + id.toString());
+			message += "," + rotMatrix.angle;
+			message += "," + rotMatrix.x;
+			message += "," + rotMatrix.y;
+			message += "," + rotMatrix.z;
+			
+			sendPacket(message);
+		} 
+		catch (IOException e) 
+		{	
+			e.printStackTrace();
+		}	
+	}
+
 	// ------------------- GHOST NPC SECTION -----------------------------
 
 	private void createGhostNPC (Vector3f position) throws IOException

@@ -17,7 +17,7 @@ public class TurnRightAction extends AbstractInputAction
     public void performAction(float time, Event e)
     {
         game.getAvatar().turnObjRight(e, game.getElapseTime());
-        protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
+        protClient.sendRotateMessage(game.getAvatar().getLocalRotation());
 
         game.updateAvatarPhysicsObject();
         //System.out.println("UPDATING PHYSICS OBJECT MOVE RIGHT");

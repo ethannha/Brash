@@ -72,4 +72,17 @@ public class GhostManager
 			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
 		}
 	}
+
+	public void updateGhostAvatarRotation(UUID id, Matrix4f rotation)
+	{
+		GhostAvatar ghostAvatar = findAvatar(id);
+		if (ghostAvatar != null)
+		{	
+			ghostAvatar.setLocalRotation(rotation);
+		}
+		else
+		{	
+			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
+		}
+	}
 }
