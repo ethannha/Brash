@@ -605,7 +605,7 @@ public final class AnimatedShape extends ObjShape
 		curAnimEndTypeTotal = 0;
 	}
 
-	// custom method for checking if animation is playing selected animation
+	/** custom method for checking if animation is playing selected animation */
     public boolean isPlayingAnimation(String animName) {
 		Animation anim = animationsList.get(animName);
 		if(curAnimation == anim) {

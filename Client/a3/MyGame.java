@@ -7,12 +7,14 @@ import java.lang.Math;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Random;
+import java.awt.Event;
 import java.awt.event.*;
 import java.io.*;
 
 import org.joml.*;
 
 import tage.CameraOrbitController;
+import tage.Light.LightType;
 import tage.audio.*;
 import tage.input.*;
 import tage.input.action.*;
@@ -39,7 +41,7 @@ public class MyGame extends VariableFrameRateGame
 	private GameObject avatar, prizeItem, worldTerrain, boxObject;
 	private ObjShape avatarS, prizeItemS, ghostS, terrainS, boxS;
 	private TextureImage avatarT, ghostT, hills, grass, prizeTexture, boxTexture;
-	private Light light1;
+	private Light light1, spotLight;
 	private InputManager im;
 	private Camera mainCamera;
 	private CameraOrbitController orbitController;
@@ -59,6 +61,8 @@ public class MyGame extends VariableFrameRateGame
 	private ProtocolType serverProtocol;
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
+
+	private FwdAction fwdAction;
 
 	// Script
 	private File script1, script2;
@@ -191,12 +195,13 @@ public class MyGame extends VariableFrameRateGame
 
 		// Box
 		boxObject = new GameObject(GameObject.root(), boxS, boxTexture);
-		initialTranslation =  (new Matrix4f().translation(6, 1, 2));
+		initialTranslation =  (new Matrix4f().translation((float)((double)jsEngine.get("b1X")), (float)((double)jsEngine.get("b1Y")), 
+		(float)((double)jsEngine.get("b1Z"))));
 		initialScale = (new Matrix4f()).scaling(0.5f);
 		boxObject.setLocalTranslation(initialTranslation);
-		initialScale = (new Matrix4f()).scaling(1.0f);
+		initialScale = (new Matrix4f()).scaling(0.5f);
 		boxObject.setLocalScale(initialScale);
-		initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
+		// initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
 		boxObject.setLocalRotation(initialRotation);
 
 	}
@@ -207,6 +212,11 @@ public class MyGame extends VariableFrameRateGame
 		light1 = new Light();
 		light1.setLocation(new Vector3f(5.0f, 4.0f, 2.0f));
 		(engine.getSceneGraph()).addLight(light1);
+
+		spotLight = new Light();
+		spotLight.setType(LightType.SPOTLIGHT);
+		spotLight.setLocation(boxObject.getWorldLocation());
+		(engine.getSceneGraph()).addLight(spotLight);
 	}
 
 	public void initAudio()
@@ -348,14 +358,14 @@ public class MyGame extends VariableFrameRateGame
 		
 		orbitController = new CameraOrbitController(mainCamera, avatar, gpName, engine);
 
-		FwdAction fwdAction = new FwdAction(this, protClient);
+		fwdAction = new FwdAction(this, protClient);
 		BackAction backAction = new BackAction(this, protClient);
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this, protClient);
 		TurnRightAction turnRightAction = new TurnRightAction(this, protClient);
 		GamePadTurn gamePadTurn = new GamePadTurn(this);
 		GamePadAction gamePadAction = new GamePadAction(this);
 		//ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
-		JumpAction jumpAction = new JumpAction(this, physicsEngine, avatarP);
+		JumpAction jumpAction = new JumpAction(this, avatarP, protClient);
 
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.W, fwdAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, backAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -538,6 +548,11 @@ public class MyGame extends VariableFrameRateGame
 	public PhysicsEngine getPhysicsEngine()
 	{
 		return physicsEngine;
+	}
+
+	public void playGrassSound()
+	{
+		grassSound.play();
 	}
 
 	public void createViewports()

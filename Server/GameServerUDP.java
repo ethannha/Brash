@@ -2,6 +2,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
 
+import org.joml.Vector3f;
+
 import tage.networking.server.GameConnectionServer;
 import tage.networking.server.IClientInfo;
 
@@ -117,10 +119,11 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 
 			// Case where server receies notice that an avatar is close to the NPC
 			// Received message format: (isnear, id)
-			if (messageTokens[0].compareTo("isnear") == 0)
+			if (messageTokens[0].compareTo("isnr") == 0)
 			{
-				UUID clientID = UUID.fromString(messageTokens[1]);
-				handleNearTiming(clientID);
+				Boolean isNear = Boolean.parseBoolean(messageTokens[1]);
+				String[] playerPos = {messageTokens[2], messageTokens[3], messageTokens[4]};
+				handleNearTiming(playerPos, isNear);
 			}
 
 			if (messageTokens[0].compareTo("npcinfo") == 0)
@@ -273,9 +276,16 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 
 	// NPC METHODS ===============================
 
-	public void handleNearTiming(UUID clientID)
+	public void handleNearTiming(String[] playerPos, Boolean isNear)
     {
-        npcCtrl.setNearFlag(true);
+        npcCtrl.setNearFlag(isNear);
+		(npcCtrl.getNPC()).setSeePlayer(isNear);
+		Vector3f player = new Vector3f(
+			Float.parseFloat(playerPos[0]),
+			Float.parseFloat(playerPos[1]),
+			Float.parseFloat(playerPos[2])
+		);
+		(npcCtrl.getNPC()).setTargetLocation(player);
     }
 
     // -- additional protocol for NPCs ---
@@ -306,6 +316,8 @@ public class GameServerUDP extends GameConnectionServer<UUID>
             message += "," + (npcCtrl.getNPC()).getX();
             message += "," + (npcCtrl.getNPC()).getY();
             message += "," + (npcCtrl.getNPC()).getZ();
+			message += "," + npcCtrl.getCriteria();
+			message += "," + npcCtrl.getNearFlag();
             sendPacketToAll(message);
         }
         catch (IOException e) 

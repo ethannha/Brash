@@ -12,7 +12,7 @@ public class NPCcontroller
     boolean nearFlag = false;
     long thinkStartTime, tickStartTime, lastThinkUpdateTime, lastTickUpdateTime;
     GameServerUDP server;
-    double criteria = 2.0;
+    double criteria = 4.0;
 
     public void updateNPCs()
     {
@@ -72,7 +72,7 @@ public class NPCcontroller
 
     public boolean getNearFlag()
     {
-        System.out.println("============================================= NPC NEAR FLAG: " + nearFlag);
+        //System.out.println("============================================= NPC NEAR FLAG: " + nearFlag);
         return nearFlag;
     }
 

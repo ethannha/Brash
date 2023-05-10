@@ -136,10 +136,13 @@ public class ProtocolClient extends GameConnectionClient
 				// creating a new ghost npc
 				UUID npcID = UUID.fromString(messageTokens[1]);
 				// Parse out the position
-				System.out.println("MAKING NPC");
+				Vector3f NPCPosition = new Vector3f(
+					Float.parseFloat(messageTokens[2]),
+					Float.parseFloat(messageTokens[3]),
+					Float.parseFloat(messageTokens[4]));
 				try
 				{
-					createGhostNPC(game.getNPCDefaultPosition());
+					createGhostNPC(NPCPosition);
 				}
 				catch (IOException e) {
 					System.out.println("CREATING GHOST NPC GONE WRONGGGGGGGGGGGGGGGGGGGGG");
@@ -151,15 +154,34 @@ public class ProtocolClient extends GameConnectionClient
 			if (messageTokens[0].compareTo("npcinfo") == 0)
 			{
 
-				System.out.println("CLIENT GETTING NPC INFO FROM SERVER");
 				Vector3f ghostNPCPosition = new Vector3f(
 					Float.parseFloat(messageTokens[1]),
 					Float.parseFloat(messageTokens[2]),
 					Float.parseFloat(messageTokens[3])
 				);
-				
+
 				updateGhostNPC(ghostNPCPosition, 1.0f);
+
+				if (game.getAvatar().getWorldLocation().distance(ghostNPCPosition.x(), ghostNPCPosition.y(), ghostNPCPosition.z()) < Float.parseFloat(messageTokens[4]))
+				{
+					System.out.println("AVATAR IS NEAR NPCCCCCC");
+					ghostNPC.setSize(true);
+					sendNPCisNear(game.getAvatar().getWorldLocation(), true);
+				}
+				else
+				{
+					sendNPCisNear(game.getAvatar().getWorldLocation(), false);
+				}
+				
+				
 				//System.out.println("Successful updated ghost info ---------------------------");
+
+			}
+
+			if (messageTokens[0].compareTo("isnr") == 0)
+			{
+				System.out.println("=================================== PROTOCOL IS NEAR: " + messageTokens[1] + ", " + messageTokens[2] + ", " + messageTokens[3]);
+
 			}
 		}
 	}
@@ -351,6 +373,22 @@ public class ProtocolClient extends GameConnectionClient
 		} 
 		catch (IOException e) 
 		{	
+			e.printStackTrace();
+		}
+	}
+
+	public void sendNPCisNear(Vector3f playerPos, boolean isNear)
+	{
+		try
+		{
+			String message = new String("isnr," + isNear);
+			message += "," + playerPos.x();
+			message += "," + playerPos.y();
+			message += "," + playerPos.z();
+			sendPacket(message);
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 	}
