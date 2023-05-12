@@ -56,6 +56,7 @@ public class MyGame extends VariableFrameRateGame
 
 	// Ghost and Connection
 	private GhostManager gm;
+	private BoxManager bm;
 	private String serverAddress;
 	private int serverPort;
 	private ProtocolType serverProtocol;
@@ -92,6 +93,7 @@ public class MyGame extends VariableFrameRateGame
 	{ 
 		super(); 
 		gm = new GhostManager(this);
+		bm = new BoxManager(this);
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
 		if (protocol.toUpperCase().compareTo("TCP") == 0)
@@ -479,6 +481,7 @@ public class MyGame extends VariableFrameRateGame
 			// ask client protocol to send initial join message
 			// to server, with a unique identifier for the client
 			protClient.sendJoinMessage();
+			protClient.sendNeedBoxObject();
 		}
 	}
 
@@ -611,6 +614,21 @@ public class MyGame extends VariableFrameRateGame
 	public void setRunning(boolean check)
 	{
 		running = check;
+	}
+
+	public ObjShape getBoxShape()
+	{
+		return boxS;
+	}
+
+	public TextureImage getBoxTexture()
+	{
+		return boxTexture;
+	}
+
+	public BoxManager getBoxManager()
+	{
+		return bm;
 	}
 
 	public ObjShape getGhostShape()

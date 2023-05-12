@@ -11,11 +11,13 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 {
 
 	NPCcontroller npcCtrl;
+	BoxController boxCtrl;
 
-	public GameServerUDP(int localPort, NPCcontroller npc) throws IOException 
+	public GameServerUDP(int localPort, NPCcontroller npc, BoxController box) throws IOException 
 	{	
 		super(localPort, ProtocolType.UDP);
 		npcCtrl = npc;
+		boxCtrl = box;
 	}
 
 	@Override
@@ -136,6 +138,15 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			if (messageTokens[0].compareTo("npcinfo") == 0)
 			{
 				System.out.println("SERVER GOT NPCINFOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+			}
+
+			// Box message from client
+			
+			if (messageTokens[0].compareTo("needBox") == 0)
+			{
+				System.out.println("RECEIVED BOX NEED MESSAGE FROM CLIENT");
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				sendBoxInfo(clientID);
 			}
 		}
 	}
@@ -307,8 +318,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 		(npcCtrl.getNPC()).setTargetLocationAsGhost(ghost);
     }
 
-    // -- additional protocol for NPCs ---
-
+	// ----------- SENDING NPC MESSAGES -----------------
     public void sendCheckForAvatarNear()
     {
         try 
@@ -357,7 +367,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
         }
     }
 
-    // ----------- SENDING NPC MESSAGES -----------------
+    
     // informs clients of the whereabouts of the NPCs
     public void sendCreateNPCmsg(UUID clientID, String[] position)
     {
@@ -375,4 +385,22 @@ public class GameServerUDP extends GameConnectionServer<UUID>
             e.printStackTrace();
         }
     }
+
+	// Sending Box message
+	public void sendBoxInfo(UUID clientID)
+	{
+		System.out.println("SERVER SENDING BOXXXXXXXXXXXXXXXXXXXX INFO");
+		try
+		{
+			String message = new String("boxinfo," + clientID.toString());
+			message += "," + (boxCtrl.getBox()).getPosition().x();
+			message += "," + (boxCtrl.getBox()).getPosition().y();
+			message += "," + (boxCtrl.getBox()).getPosition().z();
+			sendPacket(message, clientID);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
 }

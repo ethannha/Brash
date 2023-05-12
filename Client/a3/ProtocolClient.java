@@ -15,8 +15,10 @@ public class ProtocolClient extends GameConnectionClient
 {
 	private MyGame game;
 	private GhostManager ghostManager;
+	private BoxManager boxManager;
 	private UUID id;
 	private GhostNPC ghostNPC;
+	private int boxCounter;
 	
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
 	{	
@@ -24,6 +26,8 @@ public class ProtocolClient extends GameConnectionClient
 		this.game = game;
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
+		boxManager = game.getBoxManager();
+		boxCounter = 0;
 	}
 	
 	public UUID getID() { return id; }
@@ -193,16 +197,30 @@ public class ProtocolClient extends GameConnectionClient
 						sendNPCisGhostNear(ghostAvatar.getPosition(), false);
 					}
 				}
-				
-				
 				//System.out.println("Successful updated ghost info ---------------------------");
-
 			}
 
 			if (messageTokens[0].compareTo("isnr") == 0)
 			{
 				System.out.println("=================================== PROTOCOL IS NEAR: " + messageTokens[1] + ", " + messageTokens[2] + ", " + messageTokens[3]);
 
+			}
+
+			// Box message from server
+
+			if (messageTokens[0].compareTo("boxinfo") == 0)
+			{
+				System.out.println("THIS IS BOX INFOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
+				UUID clientID = UUID.fromString(messageTokens[1]);
+
+				Vector3f boxLocation = new Vector3f(
+					Float.parseFloat(messageTokens[2]), 
+					Float.parseFloat(messageTokens[3]), 
+					Float.parseFloat(messageTokens[4])
+				);
+
+				createBoxObject(boxLocation);
+				
 			}
 		}
 	}
@@ -422,6 +440,36 @@ public class ProtocolClient extends GameConnectionClient
 			message += "," + ghostPos.x();
 			message += "," + ghostPos.y();
 			message += "," + ghostPos.z();
+			sendPacket(message);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	// Box message
+	private void createBoxObject (Vector3f position)
+	{
+		try
+		{
+			if (boxCounter < 5)
+			{
+				boxManager.createBoxObject(boxCounter, position.add(boxCounter, boxCounter, boxCounter));
+				boxCounter++;
+			}
+			
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+	public void sendNeedBoxObject()
+	{
+		try
+		{
+			String message = new String("needBox," + id.toString());
 			sendPacket(message);
 		}
 		catch (IOException e)

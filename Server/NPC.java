@@ -2,7 +2,6 @@ import org.joml.Vector3f;
 
 public class NPC 
 {
-    double locationX, locationY, locationZ;
     float dir = 0.1f;
     double size = 1.0;
     boolean seePlayer = false, seeGhost = false;
@@ -13,9 +12,6 @@ public class NPC
 
     public NPC()
     {
-        locationX = 0.0;
-        locationY = 0.0;
-        locationZ = 0.0;
         npcLocation = new Vector3f();
     }
 
