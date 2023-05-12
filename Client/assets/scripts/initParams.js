@@ -8,14 +8,14 @@ var b1Y = 1.25;
 var b1Z = 2.0;
 
 // Avatar
-var avatarPosX = -8.0;
-var avatarPosY = 0.7;
-var avatarPosZ = 2.0;
+var avatarPosX = 0.0;
+var avatarPosY = 0.65;
+var avatarPosZ = 7.0;
 
 // Ghost
-var ghostPosX = 4.0
-var ghostPosY = 0.7
-var ghostPosZ = 2.0
+var ghostPosX = 0.0;
+var ghostPosY = 0.65;
+var ghostPosZ = 7.0;
 
 // Physics
 var gravityY = -5.0;

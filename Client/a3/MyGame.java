@@ -81,7 +81,7 @@ public class MyGame extends VariableFrameRateGame
 	private float vals[] = new float[16];
 
 	// Animation
-	private AnimatedShape avatarAnimatedShape;
+	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape;
 
 	// NPC/AI
 	private ObjShape npcShape;
@@ -123,6 +123,15 @@ public class MyGame extends VariableFrameRateGame
 		avatarAnimatedShape.loadAnimation("JUMP", "player_jump.rka");
 		avatarAnimatedShape.loadAnimation("PUNCHL", "player_punchL.rka");
 		avatarAnimatedShape.loadAnimation("PUNCHR", "player_punchR.rka");
+
+		ghostAnimatedShape = new AnimatedShape("player.rkm", "player.rks");
+		ghostAnimatedShape.loadAnimation("RUN", "player_run.rka");
+		ghostAnimatedShape.loadAnimation("IDLE", "player_idle.rka");
+		ghostAnimatedShape.loadAnimation("BACK", "player_backwalk.rka");
+		ghostAnimatedShape.loadAnimation("JUMP", "player_jump.rka");
+		ghostAnimatedShape.loadAnimation("PUNCHL", "player_punchL.rka");
+		ghostAnimatedShape.loadAnimation("PUNCHR", "player_punchR.rka");
+
 		ghostS = new ImportedModel("player.obj");
 		npcShape = new ImportedModel("player.obj");
 		terrainS = new TerrainPlane(1000);
@@ -685,6 +694,11 @@ public class MyGame extends VariableFrameRateGame
 	public AnimatedShape getAvatarAnimatedShape()
 	{
 		return avatarAnimatedShape;
+	}
+
+	public AnimatedShape getGhostAnimatedShape()
+	{
+		return ghostAnimatedShape;
 	}
 
 	@Override

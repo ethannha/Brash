@@ -40,7 +40,7 @@ public class JumpAction extends AbstractInputAction
         float keyValue = evt.getValue();
         if (keyValue > -0.2 && keyValue < 0.2) return; //deadzone
 
-        System.out.println("Transform VEL: " + avatarP.getTransform()[13]);
+        //System.out.println("Transform VEL: " + avatarP.getTransform()[13]);
         
         // Get the local up direction of the avatar
         Vector3f up = game.getAvatar().getLocalUpVector();
@@ -60,12 +60,6 @@ public class JumpAction extends AbstractInputAction
 
         // Apply a force in the local y-direction of the avatar
         avatarP.applyForce(0.0f, forceApplied, 0.0f, up.x, up.y, up.z);
-
-        if (!game.getAvatarAnimatedShape().isPlayingAnimation("JUMP")) {
-            game.playGrassSound();;
-            game.getAvatarAnimatedShape().stopAnimation();
-            game.getAvatarAnimatedShape().playAnimation("JUMP", 0.5f, AnimatedShape.EndType.NONE, 0);
-        }
 
         //System.out.println("Linear VEL: " + avatarP.getLinearVelocity()[0] + ", " + avatarP.getLinearVelocity()[1] + ", " + avatarP.getLinearVelocity()[2]);
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());

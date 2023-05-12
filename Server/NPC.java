@@ -5,8 +5,8 @@ public class NPC
     double locationX, locationY, locationZ;
     float dir = 0.1f;
     double size = 1.0;
-    boolean seePlayer = false;
-    Vector3f targetLocation;
+    boolean seePlayer = false, seeGhost = false;
+    Vector3f targetLocationAv, targetLocationGhost;
     float speed = 0.01f;
     Vector3f npcLocation;
 
@@ -33,9 +33,16 @@ public class NPC
     public void getSmall() { size = 3.0; }
     public double getSize() { return size; }
 
-    public void setTargetLocation(Vector3f playerPos)
+    public void setTargetLocationAsAv(Vector3f playerPos)
     {
-        targetLocation = playerPos;
+        targetLocationAv = playerPos;
+        //System.out.println("======================= AV TARGET LOC: " + playerPos.x + ", " + playerPos.y + ", " + playerPos.z);
+    }
+
+    public void setTargetLocationAsGhost(Vector3f ghostPos)
+    {
+        targetLocationGhost = ghostPos;
+        //System.out.println("======================= GHOST TARGET LOC: " + ghostPos.x + ", " + ghostPos.y + ", " + ghostPos.z);
     }
 
     public void setSeePlayer(boolean c)
@@ -43,16 +50,32 @@ public class NPC
         seePlayer = c;
     }
 
+    public void setSeeGhost(boolean c)
+    {
+        seeGhost = c;
+    }
+
     public void updateLocation()
     {
-        if (seePlayer)
+        if (seePlayer || seeGhost)
         {
-            Vector3f direction = new Vector3f();
-            targetLocation.sub(npcLocation, direction).normalize();
-            direction.mul(speed);
-            npcLocation.add(direction);
+            if (seePlayer)
+            {
+                Vector3f direction = new Vector3f();
+                targetLocationAv.sub(npcLocation, direction).normalize();
+                direction.mul(speed);
+                npcLocation.add(direction);
+            }
+            else if (seeGhost)
+            {
+                Vector3f direction = new Vector3f();
+                targetLocationGhost.sub(npcLocation, direction).normalize();
+                direction.mul(speed);
+                npcLocation.add(direction);
+            }
+            
         }
-        else
+        else if (seePlayer == false && seeGhost == false)
         {
             if (npcLocation.x > 10) dir = -0.1f;
             if (npcLocation.x < -10) dir = 0.1f;

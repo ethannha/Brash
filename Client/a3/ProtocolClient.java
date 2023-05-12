@@ -2,7 +2,10 @@ package a3;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.Iterator;
 import java.util.UUID;
+import java.util.Vector;
+
 import org.joml.*;
 
 import tage.*;
@@ -166,11 +169,29 @@ public class ProtocolClient extends GameConnectionClient
 				{
 					System.out.println("AVATAR IS NEAR NPCCCCCC");
 					ghostNPC.setSize(true);
-					sendNPCisNear(game.getAvatar().getWorldLocation(), true);
+					sendNPCisAvNear(game.getAvatar().getWorldLocation(), true);
 				}
 				else
 				{
-					sendNPCisNear(game.getAvatar().getWorldLocation(), false);
+					sendNPCisAvNear(game.getAvatar().getWorldLocation(), false);
+				}
+
+				Vector<GhostAvatar> ghostList = ghostManager.getAllGhost();
+				Iterator<GhostAvatar> it = ghostList.iterator();
+				GhostAvatar ghostAvatar;
+				while(it.hasNext())
+				{
+					ghostAvatar = it.next();
+					if (ghostAvatar.getPosition().distance(ghostNPCPosition.x(), ghostNPCPosition.y(), ghostNPCPosition.z()) < Float.parseFloat(messageTokens[4]))
+					{
+						System.out.println("GHOST IS NEAR NPCCCCCCCCCCCCC");
+						ghostNPC.setSize(true);
+						sendNPCisGhostNear(ghostAvatar.getPosition(), true);
+					}
+					else
+					{
+						sendNPCisGhostNear(ghostAvatar.getPosition(), false);
+					}
 				}
 				
 				
@@ -377,14 +398,30 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
-	public void sendNPCisNear(Vector3f playerPos, boolean isNear)
+	public void sendNPCisAvNear(Vector3f playerPos, boolean isNear)
 	{
 		try
 		{
-			String message = new String("isnr," + isNear);
+			String message = new String("isAvnr," + isNear);
 			message += "," + playerPos.x();
 			message += "," + playerPos.y();
 			message += "," + playerPos.z();
+			sendPacket(message);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void sendNPCisGhostNear(Vector3f ghostPos, boolean isNear)
+	{
+		try
+		{
+			String message = new String("isGhostnr," + isNear);
+			message += "," + ghostPos.x();
+			message += "," + ghostPos.y();
+			message += "," + ghostPos.z();
 			sendPacket(message);
 		}
 		catch (IOException e)

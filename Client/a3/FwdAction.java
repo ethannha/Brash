@@ -20,12 +20,7 @@ public class FwdAction extends AbstractInputAction
         game.getAvatar().moveObjFwd(e, game.getElapseTime());
         game.updateAvatarPhysicsObject();
         //System.out.println("UPDATING PHYSICS OBJECT MOVE FORWARD");
-        if (!game.getAvatarAnimatedShape().isPlayingAnimation("RUN"))
-        {
-            game.playGrassSound();
-            game.getAvatarAnimatedShape().stopAnimation();
-            game.getAvatarAnimatedShape().playAnimation("RUN", 0.5f, AnimatedShape.EndType.NONE, 0);
-        }
+        
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }   
 }

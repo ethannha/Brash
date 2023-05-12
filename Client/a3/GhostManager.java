@@ -45,6 +45,11 @@ public class GhostManager
 		}
 	}
 
+	public Vector<GhostAvatar> getAllGhost()
+	{
+		return ghostAvatars;
+	}
+
 	private GhostAvatar findAvatar(UUID id)
 	{	
 		GhostAvatar ghostAvatar;

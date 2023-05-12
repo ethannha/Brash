@@ -119,11 +119,18 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 
 			// Case where server receies notice that an avatar is close to the NPC
 			// Received message format: (isnear, id)
-			if (messageTokens[0].compareTo("isnr") == 0)
+			if (messageTokens[0].compareTo("isAvnr") == 0)
 			{
 				Boolean isNear = Boolean.parseBoolean(messageTokens[1]);
 				String[] playerPos = {messageTokens[2], messageTokens[3], messageTokens[4]};
-				handleNearTiming(playerPos, isNear);
+				handleAvatarNearTiming(playerPos, isNear);
+			}
+
+			if (messageTokens[0].compareTo("isGhostnr") == 0)
+			{
+				Boolean isNear = Boolean.parseBoolean(messageTokens[1]);
+				String[] ghostPos = {messageTokens[2], messageTokens[3], messageTokens[4]};
+				handleGhostNearTiming(ghostPos, isNear);
 			}
 
 			if (messageTokens[0].compareTo("npcinfo") == 0)
@@ -276,7 +283,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 
 	// NPC METHODS ===============================
 
-	public void handleNearTiming(String[] playerPos, Boolean isNear)
+	public void handleAvatarNearTiming(String[] playerPos, Boolean isNear)
     {
         npcCtrl.setNearFlag(isNear);
 		(npcCtrl.getNPC()).setSeePlayer(isNear);
@@ -285,7 +292,19 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			Float.parseFloat(playerPos[1]),
 			Float.parseFloat(playerPos[2])
 		);
-		(npcCtrl.getNPC()).setTargetLocation(player);
+		(npcCtrl.getNPC()).setTargetLocationAsAv(player);
+    }
+
+	public void handleGhostNearTiming(String[] ghostPos, Boolean isNear)
+    {
+        npcCtrl.setNearFlag(isNear);
+		(npcCtrl.getNPC()).setSeeGhost(isNear);
+		Vector3f ghost = new Vector3f(
+			Float.parseFloat(ghostPos[0]),
+			Float.parseFloat(ghostPos[1]),
+			Float.parseFloat(ghostPos[2])
+		);
+		(npcCtrl.getNPC()).setTargetLocationAsGhost(ghost);
     }
 
     // -- additional protocol for NPCs ---
