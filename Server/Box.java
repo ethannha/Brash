@@ -3,6 +3,7 @@ import org.joml.Vector3f;
 public class Box
 {
     Vector3f boxLocation;
+    Boolean boxStatus = true;
 
     public Box()
     {
@@ -10,9 +11,7 @@ public class Box
     }
 
     public void setPosition(Vector3f loc) { boxLocation = loc; }
+    public void setBoxStatus(Boolean c) { boxStatus = c; }
     public Vector3f getPosition() { return boxLocation; }
-    public void boxAlive()
-    {
-        System.out.println("BOX UPDATEEEEEEEEEEEEEEEEEEE");
-    }
+    public Boolean getBoxStatus() { return boxStatus; }
 }

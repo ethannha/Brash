@@ -6,6 +6,7 @@ public class BoxController
     GameServerUDP server;
     long thinkStartTime, tickStartTime, lastThinkUpdateTime, lastTickUpdateTime;
     double criteria = 1.0;
+    int boxAmount = 5;
 
     public void start(GameServerUDP s)
     {
@@ -23,9 +24,14 @@ public class BoxController
         return box;
     }
 
+    public int getBoxAmount()
+    {
+        return boxAmount;
+    }
+
     private void setupBox()
     {
         box = new Box();
-        box.setPosition(new Vector3f(0.0f, 0.65f, -5.0f));
+        box.setPosition(new Vector3f(-5.0f, 1.0f, 0.0f));
     }
 }

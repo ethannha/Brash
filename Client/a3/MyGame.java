@@ -34,13 +34,13 @@ import javax.script.ScriptException;
 
 public class MyGame extends VariableFrameRateGame
 {
-	private int score=0, itemHolding=0;
+	private int score=0;
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
-	private GameObject avatar, prizeItem, worldTerrain, boxObject;
-	private ObjShape avatarS, prizeItemS, ghostS, terrainS, boxS;
-	private TextureImage avatarT, ghostT, hills, grass, prizeTexture, boxTexture;
+	private GameObject avatar, prizeItem, worldTerrain, jukeBoxObject;
+	private ObjShape avatarS, prizeItemS, ghostS, terrainS, jukeBoxS, boxS;
+	private TextureImage avatarT, ghostT, hills, grass, prizeTexture, jukeBoxTexture, boxTexture;
 	private Light light1, spotLight;
 	private InputManager im;
 	private Camera mainCamera;
@@ -63,13 +63,17 @@ public class MyGame extends VariableFrameRateGame
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false;
 
-	private FwdAction fwdAction;
+	public float boxSpacing = 2.0f;
 
 	// Script
 	private File script1, script2;
 	private long fileLastModified = 0;
 	ScriptEngine jsEngine;
 	Invocable invocableEngine;
+
+	// Script initialize
+	private float avatarPosX, avatarPosY, avatarPosZ, jukeBoxPosX, jukeBoxPosY, jukeBoxPosZ;
+	private int hud1Height;
 
 	// Player
 	private double player1WinCounter;
@@ -140,6 +144,7 @@ public class MyGame extends VariableFrameRateGame
 
 		//Diamond object
 		prizeItemS = new ImportedModel("crown.obj");
+		jukeBoxS = new Cube();
 		boxS = new Cube();
 
 	}
@@ -152,8 +157,10 @@ public class MyGame extends VariableFrameRateGame
 		prizeTexture = new TextureImage("crown2_texture.png");
 		hills = new TextureImage("hill2.png");
 		grass = new TextureImage("grass2.png");
-		boxTexture = new TextureImage("BlueWall.png");
+		jukeBoxTexture = new TextureImage("BlueWall.png");
 		npcTex = new TextureImage("player_uv.png");
+
+		boxTexture = new TextureImage("BlueWall.png");
 
 	}
 
@@ -179,8 +186,10 @@ public class MyGame extends VariableFrameRateGame
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarAnimatedShape, avatarT);
 		//avatar = new GameObject(GameObject.root(), avatarS, avatarT);
-		initialTranslation = (new Matrix4f()).translation((float)((double)jsEngine.get("avatarPosX")), (float)((double)jsEngine.get("avatarPosY")), 
-		(float)((double)jsEngine.get("avatarPosZ")));
+		avatarPosX = (float)((double)jsEngine.get("avatarPosX"));
+		avatarPosY = (float)((double)jsEngine.get("avatarPosY"));
+		avatarPosZ = (float)((double)jsEngine.get("avatarPosZ"));
+		initialTranslation = (new Matrix4f()).translation(avatarPosX, avatarPosY, avatarPosZ);
 
 		initialScale = (new Matrix4f()).scaling(0.2f);
 		avatar.setLocalTranslation(initialTranslation);
@@ -205,15 +214,17 @@ public class MyGame extends VariableFrameRateGame
 		worldTerrain.setHeightMap(hills);
 
 		// Box
-		boxObject = new GameObject(GameObject.root(), boxS, boxTexture);
-		initialTranslation =  (new Matrix4f().translation((float)((double)jsEngine.get("b1X")), (float)((double)jsEngine.get("b1Y")), 
-		(float)((double)jsEngine.get("b1Z"))));
+		jukeBoxObject = new GameObject(GameObject.root(), jukeBoxS, jukeBoxTexture);
+		jukeBoxPosX = (float)((double)jsEngine.get("b1X"));
+		jukeBoxPosY = (float)((double)jsEngine.get("b1Y"));
+		jukeBoxPosZ = (float)((double)jsEngine.get("b1Z"));
+		initialTranslation =  (new Matrix4f().translation(jukeBoxPosX, jukeBoxPosY, jukeBoxPosZ));
 		initialScale = (new Matrix4f()).scaling(0.5f);
-		boxObject.setLocalTranslation(initialTranslation);
+		jukeBoxObject.setLocalTranslation(initialTranslation);
 		initialScale = (new Matrix4f()).scaling(0.5f);
-		boxObject.setLocalScale(initialScale);
+		jukeBoxObject.setLocalScale(initialScale);
 		// initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
-		boxObject.setLocalRotation(initialRotation);
+		jukeBoxObject.setLocalRotation(initialRotation);
 
 	}
 
@@ -226,7 +237,7 @@ public class MyGame extends VariableFrameRateGame
 
 		spotLight = new Light();
 		spotLight.setType(LightType.SPOTLIGHT);
-		spotLight.setLocation(boxObject.getWorldLocation());
+		spotLight.setLocation(jukeBoxObject.getWorldLocation());
 		(engine.getSceneGraph()).addLight(spotLight);
 	}
 
@@ -334,6 +345,8 @@ public class MyGame extends VariableFrameRateGame
 		player1WinCounter = ((int)jsEngine.get("p1Win"));
 		player2WinCounter = ((int)jsEngine.get("p2Win"));
 
+		hud1Height = ((int)jsEngine.get("hud1Height"));
+
 		// ------------- Initialize Update win counter --------------
 		script2 = new File("assets/scripts/updateWinCount.js");
 		this.runScript(script2);
@@ -369,7 +382,7 @@ public class MyGame extends VariableFrameRateGame
 		
 		orbitController = new CameraOrbitController(mainCamera, avatar, gpName, engine);
 
-		fwdAction = new FwdAction(this, protClient);
+		FwdAction fwdAction = new FwdAction(this, protClient);
 		BackAction backAction = new BackAction(this, protClient);
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this, protClient);
 		TurnRightAction turnRightAction = new TurnRightAction(this, protClient);
@@ -377,11 +390,13 @@ public class MyGame extends VariableFrameRateGame
 		GamePadAction gamePadAction = new GamePadAction(this);
 		//ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
 		JumpAction jumpAction = new JumpAction(this, avatarP, protClient);
+		PunchAction punchAction = new PunchAction(this, protClient);
 
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.W, fwdAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.S, backAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, turnLeftAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, turnRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.F, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		//im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.SPACE, jumpAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 
@@ -567,6 +582,11 @@ public class MyGame extends VariableFrameRateGame
 		grassSound.play();
 	}
 
+	public void playHitSound()
+	{
+		hitSound.play();
+	}
+
 	public void createViewports()
 	{
 		(engine.getRenderSystem()).addViewport("MAIN", 0.0f, 0.0f, 1.0f, 1.0f);
@@ -738,12 +758,11 @@ public class MyGame extends VariableFrameRateGame
 		int elapsTimeSec = Math.round((float)elapsTime);
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
 		String scorerStr = Integer.toString(score);
-		String itemHoldStr = Integer.toString(itemHolding);
-		String dispStr1 = "Time = " + elapsTimeStr + "      Score = " + scorerStr + "      Item Holding = " + itemHoldStr + 
+		String dispStr1 = "Time = " + elapsTimeStr + "      Score = " + scorerStr + 
 		"            P1: " + (int)player1WinCounter + "     P2: " + (int)player2WinCounter;
 		String dispStr2 = "X = " + avatar.getWorldLocation().x() + "  Y = " + avatar.getWorldLocation().y() + "  Z = " + avatar.getWorldLocation().z();
 		Vector3f hud1Color = new Vector3f(1,0,0);
-		(engine.getHUDmanager()).setHUD1(dispStr1 + "         " + dispStr2, hud1Color, 15, 15);
+		(engine.getHUDmanager()).setHUD1(dispStr1 + "         " + dispStr2, hud1Color, (engine.getRenderSystem()).getWidth()/4, (engine.getRenderSystem()).getHeight()-hud1Height);
 
 		// update inputs and camera
 		im.update((float)elapsTime);
@@ -766,7 +785,6 @@ public class MyGame extends VariableFrameRateGame
 
 		if (isAvatarCollidingObj(prizeItem))
 		{
-			itemHolding += 1;
 			attachNode.toggle();
 			collectSound.play();
 		}
@@ -801,37 +819,39 @@ public class MyGame extends VariableFrameRateGame
 			(float)((double)jsEngine.get("avatarPosZ")));
 			avatar.setLocalTranslation(initialTranslation);
 
+			hud1Height = (int)jsEngine.get("hud1Height");
+
 		}
 		//System.out.println("AVATARP TRANSFORM: " + toFloatArray(avatarP.getTransform())[12] + ", " + toFloatArray(avatarP.getTransform())[13] + ", " + toFloatArray(avatarP.getTransform())[14]);
 
-		if (Math.abs(avatar.getLocalLocation().distance(boxObject.getWorldLocation().x(), boxObject.getWorldLocation().y(), 
-		boxObject.getWorldLocation().z())) <= 2)
-		{
-			if (itemHolding != 0)
-			{
-				removePrize(attachNode, prizeItem);
-				score++;
-				try
-				{
-					player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
-					//player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
+		// if (Math.abs(avatar.getLocalLocation().distance(boxObject.getWorldLocation().x(), boxObject.getWorldLocation().y(), 
+		// boxObject.getWorldLocation().z())) <= 2)
+		// {
+		// 	if (itemHolding != 0)
+		// 	{
+		// 		removePrize(attachNode, prizeItem);
+		// 		score++;
+		// 		try
+		// 		{
+		// 			player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
+		// 			//player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
 					
-				}
-				catch (ScriptException e1)
-				{
-					System.out.println("ScriptException in " + script2 + "; " + e1);
-				}
-				catch (NoSuchMethodException e2)
-				{
-					System.out.println("No such function/method in " + script2 + "; " + e2);
-				}
-				catch (NullPointerException e3)
-				{
-					System.out.println("Null ptr exception in " + script2 + "; " + e3);
-				}
-				itemHolding--;
-			}
-		}
+		// 		}
+		// 		catch (ScriptException e1)
+		// 		{
+		// 			System.out.println("ScriptException in " + script2 + "; " + e1);
+		// 		}
+		// 		catch (NoSuchMethodException e2)
+		// 		{
+		// 			System.out.println("No such function/method in " + script2 + "; " + e2);
+		// 		}
+		// 		catch (NullPointerException e3)
+		// 		{
+		// 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
+		// 		}
+		// 		itemHolding--;
+		// 	}
+		// }
 		protClient.processPackets();
 		processNetworking((float)elapsTime);
 	}

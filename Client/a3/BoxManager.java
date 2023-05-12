@@ -21,16 +21,21 @@ public class BoxManager
         game = (MyGame)vfrg;
     }
 
-    public void createBoxObject(int index, Vector3f pos) throws IOException
+    public void createBoxObject(int index, Vector3f pos, Boolean boxStatus) throws IOException
     {
-        System.out.println("adding box with ID --> " + index);
+        System.out.println("adding box with ID --> " + index + "; Pos: " + pos.x() + ", " + pos.y() + ", " + pos.z());
 		ObjShape s = game.getBoxShape();
 		TextureImage t = game.getBoxTexture();
-		Box newBox = new Box(index, s, t, pos);
+		Box newBox = new Box(index, s, t, pos, boxStatus);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.5f);
 		newBox.setLocalScale(initialScale);
 		boxs.add(newBox);
     }
+
+	public Vector<Box> getBoxList()
+	{
+		return boxs;
+	}
 
     public void removeBox(int index)
 	{	

@@ -144,9 +144,17 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			
 			if (messageTokens[0].compareTo("needBox") == 0)
 			{
-				System.out.println("RECEIVED BOX NEED MESSAGE FROM CLIENT");
+				//System.out.println("RECEIVED BOX NEED MESSAGE FROM CLIENT");
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				sendBoxInfo(clientID);
+			}
+
+			if (messageTokens[0].compareTo("rmvbox") == 0)
+			{
+				System.out.println("RECEIVED FROM " + messageTokens[1] + " TO REMOVE BOX: " + messageTokens[2]);
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				int boxID = Integer.parseInt(messageTokens[2]);
+				sendRemoveBox(clientID, boxID);
 			}
 		}
 	}
@@ -396,7 +404,23 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			message += "," + (boxCtrl.getBox()).getPosition().x();
 			message += "," + (boxCtrl.getBox()).getPosition().y();
 			message += "," + (boxCtrl.getBox()).getPosition().z();
+			message += "," + (boxCtrl.getBox()).getBoxStatus();
+			message += "," + boxCtrl.getBoxAmount();
 			sendPacket(message, clientID);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void sendRemoveBox(UUID clientID, int boxID)
+	{
+		try
+		{
+			String message = new String("rmvbox," + clientID.toString());
+			message += "," + boxID;
+			forwardPacketToAll(message, clientID);
 		}
 		catch (IOException e)
 		{

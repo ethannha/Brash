@@ -2,7 +2,7 @@
 var p1Win = 0;
 var p2Win = 0;
 
-// Box Object
+// JukeBox Object
 var b1X = 6.0;
 var b1Y = 1.25;
 var b1Z = 2.0;
@@ -24,3 +24,6 @@ var gravityY = -5.0;
 var npcPosX = 3.0;
 var npcPosY = 1.5;
 var npcPosZ = -2.0;
+
+// HUD
+var hud1Height = 66;

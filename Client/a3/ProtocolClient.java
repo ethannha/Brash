@@ -18,7 +18,6 @@ public class ProtocolClient extends GameConnectionClient
 	private BoxManager boxManager;
 	private UUID id;
 	private GhostNPC ghostNPC;
-	private int boxCounter;
 	
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
 	{	
@@ -27,7 +26,6 @@ public class ProtocolClient extends GameConnectionClient
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
 		boxManager = game.getBoxManager();
-		boxCounter = 0;
 	}
 	
 	public UUID getID() { return id; }
@@ -213,14 +211,33 @@ public class ProtocolClient extends GameConnectionClient
 				System.out.println("THIS IS BOX INFOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
 				UUID clientID = UUID.fromString(messageTokens[1]);
 
+
+				System.out.println("============================ INFO: " + Float.parseFloat(messageTokens[2]) + ", " + 
+				Float.parseFloat(messageTokens[3]) + ", " +
+				Float.parseFloat(messageTokens[4]));
+
 				Vector3f boxLocation = new Vector3f(
 					Float.parseFloat(messageTokens[2]), 
 					Float.parseFloat(messageTokens[3]), 
 					Float.parseFloat(messageTokens[4])
 				);
 
-				createBoxObject(boxLocation);
+				Boolean boxStatus = Boolean.parseBoolean(messageTokens[5]);
+
+				int amount = Integer.parseInt(messageTokens[6]);
+
+				for (int i = 0; i < amount; i++)
+				{
+					createBoxObject(i, boxLocation, boxStatus);
+				}
 				
+			}
+
+			if (messageTokens[0].compareTo("rmvbox") == 0)
+			{
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				int boxID = Integer.parseInt(messageTokens[2]);
+				boxManager.removeBox(boxID);
 			}
 		}
 	}
@@ -449,22 +466,18 @@ public class ProtocolClient extends GameConnectionClient
 	}
 
 	// Box message
-	private void createBoxObject (Vector3f position)
+	private void createBoxObject (int boxCounter, Vector3f position, Boolean boxStatus)
 	{
 		try
 		{
-			if (boxCounter < 5)
-			{
-				boxManager.createBoxObject(boxCounter, position.add(boxCounter, boxCounter, boxCounter));
-				boxCounter++;
-			}
-			
+			boxManager.createBoxObject(boxCounter, position.add(game.boxSpacing, 0.0f, 0.0f), boxStatus);
 		}
 		catch (IOException e)
 		{
 			e.printStackTrace();
 		}
 	}
+
 	public void sendNeedBoxObject()
 	{
 		try
@@ -475,6 +488,20 @@ public class ProtocolClient extends GameConnectionClient
 		catch (IOException e)
 		{
 			e.printStackTrace();
+		}
+	}
+
+	public void sendRemoveBoxObject(int boxID)
+	{
+		try 
+		{
+			String message = new String("rmvbox," + id.toString());
+			message += "," + boxID;
+			sendPacket(message);
+		} 
+		catch (IOException e) 
+		{
+			
 		}
 	}
 }
