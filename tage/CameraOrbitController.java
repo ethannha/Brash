@@ -96,16 +96,13 @@ public class CameraOrbitController
             {
                 rotAmount = -(speedIncrement * game.getElapseTime());
             }
+            else if (evt.getValue() > 0.2)
+            {
+                rotAmount = (speedIncrement * game.getElapseTime());
+            }
             else
             {
-                if (evt.getValue() > 0.2)
-                {
-                    rotAmount = (speedIncrement * game.getElapseTime());
-                }
-                else
-                {
-                    rotAmount = (speedIncrement * game.getElapseTime());
-                }
+                rotAmount = 0.0f;
             }
             cameraAzimuth += rotAmount;
             cameraAzimuth = cameraAzimuth % 360;
@@ -142,21 +139,14 @@ public class CameraOrbitController
             if (evt.getValue() < -0.2)
             {
                 rotAmount = -(speedIncrement * game.getElapseTime())/8;
-                if (cameraRadius <= 1.0f)
-                {
-                    rotAmount = 0.0f;
-                }
+            }
+            else if (evt.getValue() > 0.2)
+            {
+                rotAmount = (speedIncrement * game.getElapseTime())/8;
             }
             else
             {
-                if (evt.getValue() > 0.2)
-                {
-                    rotAmount = (speedIncrement * game.getElapseTime())/8;
-                }
-                else
-                {
-                    rotAmount = 0.0f;
-                }
+                rotAmount = 0.0f;
             }
             
             if(cameraRadius + rotAmount > 2.0f && cameraRadius + rotAmount < 10.0f)
@@ -177,10 +167,6 @@ public class CameraOrbitController
             if (evt.getValue() > 0.2)
             {
                 rotAmount = -(speedIncrement * game.getElapseTime())/8;
-                if (cameraRadius <= 1.0f)
-                {
-                    rotAmount = 0.0f;
-                }
             }
             else
             {
@@ -208,21 +194,14 @@ public class CameraOrbitController
             if (evt.getValue() < -0.2)
             {
                 eleAmount = -(speedIncrement * game.getElapseTime());
-                if (cameraElevation <= 1.0f)
-                {
-                    eleAmount = 0.0f;
-                }
+            }
+            else if (evt.getValue() > 0.2)
+            {
+                eleAmount = (speedIncrement * game.getElapseTime());
             }
             else
             {
-                if (evt.getValue() > 0.2)
-                {
-                    eleAmount = (speedIncrement * game.getElapseTime());
-                }
-                else
-                {
-                    eleAmount = 0.0f;
-                }
+                eleAmount = 0.0f;
             }
 
             if(cameraElevation + eleAmount > 10.0f && cameraElevation + eleAmount < 80.0f)
@@ -244,10 +223,6 @@ public class CameraOrbitController
             if (evt.getValue() > 0.2)
             {
                 eleAmount = -(speedIncrement * game.getElapseTime());
-                if (cameraElevation <= 1.0f)
-                {
-                    eleAmount = 0.0f;
-                }
             }
             else
             {

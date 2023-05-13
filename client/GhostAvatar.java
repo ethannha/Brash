@@ -3,6 +3,8 @@ package client;
 import java.util.UUID;
 
 import tage.*;
+import tage.shapes.AnimatedShape;
+
 import org.joml.*;
 
 // A ghost MUST be connected as a child of the root,
@@ -23,7 +25,7 @@ public class GhostAvatar extends GameObject
 		setPosition(p);
 		crown = crownOn;
 	}
-	
+
 	public UUID getID() { return uuid; }
 	public void setPosition(Vector3f m) { setLocalLocation(m); }
 	public Vector3f getPosition() { return getWorldLocation(); }

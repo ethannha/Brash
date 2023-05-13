@@ -410,6 +410,8 @@ public class MyGame extends VariableFrameRateGame
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._1, jumpAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._3, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 	}
 
 	@Override
@@ -533,7 +535,7 @@ public class MyGame extends VariableFrameRateGame
 				if (contacPoint.getDistance() < 0.0f)
 				{
 					System.out.println("---- hit between " + obj1 + " and " + obj2);
-					//running = false;
+					running = false;
 					break;
 				}
 			}

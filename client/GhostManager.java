@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.joml.*;
 
 import tage.*;
+import tage.shapes.AnimatedShape;
 
 public class GhostManager
 {
