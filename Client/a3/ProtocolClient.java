@@ -16,6 +16,7 @@ public class ProtocolClient extends GameConnectionClient
 	private MyGame game;
 	private GhostManager ghostManager;
 	private BoxManager boxManager;
+	//private PlayerManager playerManager;
 	private UUID id;
 	private GhostNPC ghostNPC;
 	
@@ -26,6 +27,7 @@ public class ProtocolClient extends GameConnectionClient
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
 		boxManager = game.getBoxManager();
+		//playerManager = game.getPlayerManager();
 	}
 	
 	public UUID getID() { return id; }
@@ -47,7 +49,8 @@ public class ProtocolClient extends GameConnectionClient
 				{	
 					System.out.println("join success confirmed");
 					game.setIsConnected(true);
-					sendCreateMessage(game.getGhostDefaultPosition());
+					sendCreatePlayerScore();
+					sendCreateMessage(game.getGhostDefaultPosition(), game.getPlayerScore());
 				}
 				if(messageTokens[1].compareTo("failure") == 0)
 				{	
@@ -80,11 +83,14 @@ public class ProtocolClient extends GameConnectionClient
 				Vector3f ghostPosition = new Vector3f(
 					Float.parseFloat(messageTokens[2]),
 					Float.parseFloat(messageTokens[3]),
-					Float.parseFloat(messageTokens[4]));
+					Float.parseFloat(messageTokens[4])
+				);
+
+				int score = Integer.parseInt(messageTokens[5]);
 
 				try
 				{	
-					ghostManager.createGhostAvatar(ghostID, ghostPosition);
+					ghostManager.createGhostAvatar(ghostID, ghostPosition, score);
 				}	
 				catch (IOException e)
 				{	
@@ -99,7 +105,7 @@ public class ProtocolClient extends GameConnectionClient
 				// Send the local client's avatar's information
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				sendDetailsForMessage(ghostID, game.getPlayerPosition());
+				sendDetailsForMessage(ghostID, game.getPlayerPosition(), game.getPlayerScore());
 			}
 			
 			// Handle MOVE message
@@ -126,13 +132,27 @@ public class ProtocolClient extends GameConnectionClient
 				//System.out.println("==================================== IN PACKET: " + messageTokens[2] + ", " + messageTokens[3] + ", " + messageTokens[4] + ", " 
 				//+ messageTokens[5]);
 				AxisAngle4f ghostRotMat = new AxisAngle4f(
-									Float.parseFloat(messageTokens[2]), Float.parseFloat(messageTokens[3]), 
-									Float.parseFloat(messageTokens[4]), Float.parseFloat(messageTokens[5]));
+							Float.parseFloat(messageTokens[2]), Float.parseFloat(messageTokens[3]), 
+							Float.parseFloat(messageTokens[4]), Float.parseFloat(messageTokens[5])
+				);
 
 				Matrix4f ghostRotation = new Matrix4f();
 				ghostRotation.rotation(ghostRotMat);
 
 				ghostManager.updateGhostAvatarRotation(ghostID, ghostRotation);
+			}
+
+			if (messageTokens[0].compareTo("createPS") == 0)
+			{
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+				ghostManager.addPlayer(ghostID, 0);
+			}
+
+			if (messageTokens[0].compareTo("updatePS") == 0)
+			{
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+				int score = Integer.parseInt(messageTokens[2]);
+				ghostManager.updateGhostScore(ghostID, score);
 			}
 
 			// HANDLING GHOST NPC ============================================
@@ -279,7 +299,7 @@ public class ProtocolClient extends GameConnectionClient
 	// with the server.
 	// Message Format: (create,localId,x,y,z) where x, y, and z represent the position
 
-	public void sendCreateMessage(Vector3f position)
+	public void sendCreateMessage(Vector3f position, int score)
 	{	
 		try 
 		{	
@@ -287,6 +307,7 @@ public class ProtocolClient extends GameConnectionClient
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
+			message += "," + score;
 			sendPacket(message);
 		} 
 		catch (IOException e) 
@@ -301,7 +322,7 @@ public class ProtocolClient extends GameConnectionClient
 	// from the server.
 	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the position.
 
-	public void sendDetailsForMessage(UUID remoteId, Vector3f position)
+	public void sendDetailsForMessage(UUID remoteId, Vector3f position, int score)
 	{	
 		try 
 		{	
@@ -309,7 +330,7 @@ public class ProtocolClient extends GameConnectionClient
 			message += "," + position.x();
 			message += "," + position.y();
 			message += "," + position.z();
-			
+			message += "," + score;
 			sendPacket(message);
 		} 
 		catch (IOException e) 
@@ -363,6 +384,33 @@ public class ProtocolClient extends GameConnectionClient
 		{	
 			e.printStackTrace();
 		}	
+	}
+
+	public void sendCreatePlayerScore()
+	{
+		try
+		{
+			String message = new String("createPS," + id.toString());
+			sendPacket(message);
+		}
+		catch(IOException e)
+		{
+			e.printStackTrace();
+		}
+	}
+
+	public void sendUpdatePlayerScore(int score)
+	{
+		try
+		{
+			String message = new String("updatePS," + id.toString());
+			message += "," + score;
+			sendPacket(message);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 
 	// ------------------- GHOST NPC SECTION -----------------------------
@@ -493,10 +541,11 @@ public class ProtocolClient extends GameConnectionClient
 
 	public void sendRemoveBoxObject(int boxID)
 	{
-		try 
+		try
 		{
 			String message = new String("rmvbox," + id.toString());
 			message += "," + boxID;
+
 			sendPacket(message);
 		} 
 		catch (IOException e) 

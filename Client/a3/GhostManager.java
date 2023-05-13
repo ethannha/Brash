@@ -4,8 +4,11 @@ import java.awt.Color;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.UUID;
 import java.util.Vector;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.joml.*;
 
 import tage.*;
@@ -14,13 +17,14 @@ public class GhostManager
 {
 	private MyGame game;
 	private Vector<GhostAvatar> ghostAvatars = new Vector<GhostAvatar>();
+	private Map<String, Integer> ghostScoreList = new ConcurrentHashMap<>();
 
 	public GhostManager(VariableFrameRateGame vfrg)
 	{	
 		game = (MyGame)vfrg;
 	}
 	
-	public void createGhostAvatar(UUID id, Vector3f position) throws IOException
+	public void createGhostAvatar(UUID id, Vector3f position, int score) throws IOException
 	{	
 		System.out.println("adding ghost with ID --> " + id);
 		ObjShape s = game.getGhostShape();
@@ -29,6 +33,7 @@ public class GhostManager
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.25f);
 		newAvatar.setLocalScale(initialScale);
 		ghostAvatars.add(newAvatar);
+		addPlayer(id, score);
 	}
 	
 	public void removeGhostAvatar(UUID id)
@@ -38,6 +43,7 @@ public class GhostManager
 		{	
 			game.getEngine().getSceneGraph().removeGameObject(ghostAvatar);
 			ghostAvatars.remove(ghostAvatar);
+			ghostScoreList.remove(id.toString());
 		}
 		else
 		{	
@@ -45,9 +51,37 @@ public class GhostManager
 		}
 	}
 
+	public void addPlayer(UUID clientID, int score)
+    {
+        System.out.println("=================== ADDING PLAYER: " + clientID.toString());
+        ghostScoreList.put(clientID.toString(), score);
+    }
+
 	public Vector<GhostAvatar> getAllGhost()
 	{
 		return ghostAvatars;
+	}
+
+	public String getGhostScore(UUID clientID, String message)
+	{
+		int counter = 1;
+		for (Map.Entry<String, Integer> entry : ghostScoreList.entrySet())
+		{
+			String ghostID = entry.getKey();
+			
+			if (!ghostID.equals(clientID.toString()))
+			{
+				int score = entry.getValue();
+				message += "Ghost " + counter + ": " + score + "   ||";
+				counter++;
+			}
+		}
+		return message;
+	}
+
+	public int getGhostScore(UUID ghostID)
+	{
+		return ghostScoreList.get(ghostID.toString());
 	}
 
 	private GhostAvatar findAvatar(UUID id)
@@ -64,6 +98,11 @@ public class GhostManager
 		}		
 		return null;
 	}
+
+	public void updateGhostScore(UUID clientID, int score)
+    {
+        ghostScoreList.replace(clientID.toString(), score);
+    }
 	
 	public void updateGhostAvatar(UUID id, Vector3f position)
 	{	

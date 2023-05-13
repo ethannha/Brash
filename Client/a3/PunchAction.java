@@ -11,6 +11,7 @@ public class PunchAction extends AbstractInputAction
     private MyGame game;
     private ProtocolClient protClient;
 
+
     public PunchAction(MyGame g, ProtocolClient pc)
     {
         game = g;
@@ -33,6 +34,8 @@ public class PunchAction extends AbstractInputAction
             {
                 game.getBoxManager().removeBox(b.getID());
                 protClient.sendRemoveBoxObject(b.getID());
+                game.increasePlayerScore();
+                protClient.sendUpdatePlayerScore(game.getPlayerScore());
                 break;
             }
         }

@@ -6,7 +6,10 @@ import tage.shapes.*;
 import java.lang.Math;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.awt.Event;
 import java.awt.event.*;
 import java.io.*;
@@ -34,7 +37,6 @@ import javax.script.ScriptException;
 
 public class MyGame extends VariableFrameRateGame
 {
-	private int score=0;
 	private double lastFrameTime, currFrameTime, elapsTime;
 
 	private static Engine engine;
@@ -76,6 +78,8 @@ public class MyGame extends VariableFrameRateGame
 	private int hud1Height;
 
 	// Player
+	//private PlayerManager playerManager;
+	private int playerScore;
 	private double player1WinCounter;
 	private double player2WinCounter;
 
@@ -98,6 +102,7 @@ public class MyGame extends VariableFrameRateGame
 		super(); 
 		gm = new GhostManager(this);
 		bm = new BoxManager(this);
+		//playerManager = new PlayerManager(this);
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
 		if (protocol.toUpperCase().compareTo("TCP") == 0)
@@ -342,8 +347,8 @@ public class MyGame extends VariableFrameRateGame
 		// -------------- Initialize Players Win --------------------
 		script1 = new File("assets/scripts/initParams.js");
 		this.runScript(script1);
-		player1WinCounter = ((int)jsEngine.get("p1Win"));
-		player2WinCounter = ((int)jsEngine.get("p2Win"));
+		playerScore = (int)(jsEngine.get("p1Win"));
+		//playerManager.addPlayer(protClient.getID(), playerScore);
 
 		hud1Height = ((int)jsEngine.get("hud1Height"));
 
@@ -684,6 +689,11 @@ public class MyGame extends VariableFrameRateGame
 		return ghostPos;
 	}
 
+	// public PlayerManager getPlayerManager()
+	// {
+	// 	return playerManager;
+	// }
+
 	public Engine getEngine()
 	{
 		return engine;
@@ -705,6 +715,16 @@ public class MyGame extends VariableFrameRateGame
 	public float getElapseTime()
 	{
 		return (float)((currFrameTime - lastFrameTime) / 1000.0);
+	}
+
+	public int getPlayerScore()
+	{
+		return playerScore;
+	}
+
+	public void increasePlayerScore()
+	{
+		playerScore++;
 	}
 
 	public void setIsConnected(boolean b)
@@ -757,12 +777,13 @@ public class MyGame extends VariableFrameRateGame
 		// build and set HUD
 		int elapsTimeSec = Math.round((float)elapsTime);
 		String elapsTimeStr = Integer.toString(elapsTimeSec);
-		String scorerStr = Integer.toString(score);
-		String dispStr1 = "Time = " + elapsTimeStr + "      Score = " + scorerStr + 
-		"            P1: " + (int)player1WinCounter + "     P2: " + (int)player2WinCounter;
+		String dispStr1 = "|| You: " + playerScore + "             ||   "; 
+		dispStr1 += elapsTimeStr + "   ||   ";
+		dispStr1 = gm.getGhostScore(protClient.getID(), dispStr1);
+		
 		String dispStr2 = "X = " + avatar.getWorldLocation().x() + "  Y = " + avatar.getWorldLocation().y() + "  Z = " + avatar.getWorldLocation().z();
 		Vector3f hud1Color = new Vector3f(1,0,0);
-		(engine.getHUDmanager()).setHUD1(dispStr1 + "         " + dispStr2, hud1Color, (engine.getRenderSystem()).getWidth()/4, (engine.getRenderSystem()).getHeight()-hud1Height);
+		(engine.getHUDmanager()).setHUD1(dispStr1 + "         " + dispStr2, hud1Color, (engine.getRenderSystem()).getWidth()/3, (engine.getRenderSystem()).getHeight()-hud1Height);
 
 		// update inputs and camera
 		im.update((float)elapsTime);

@@ -1,6 +1,5 @@
 // Game
 var p1Win = 0;
-var p2Win = 0;
 
 // JukeBox Object
 var b1X = 6.0;
