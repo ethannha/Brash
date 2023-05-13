@@ -48,7 +48,7 @@ public class ProtocolClient extends GameConnectionClient
 					System.out.println("join success confirmed");
 					game.setIsConnected(true);
 					sendCreatePlayerScore();
-					sendCreateMessage(game.getGhostDefaultPosition(), game.getPlayerScore());
+					sendCreateMessage(game.getGhostDefaultPosition(), game.getPlayerScore(), game.isCrownAttach());
 				}
 				if(messageTokens[1].compareTo("failure") == 0)
 				{	
@@ -86,9 +86,11 @@ public class ProtocolClient extends GameConnectionClient
 
 				int score = Integer.parseInt(messageTokens[5]);
 
+				boolean crownOn = Boolean.parseBoolean(messageTokens[6]);
+
 				try
 				{	
-					ghostManager.createGhostAvatar(ghostID, ghostPosition, score);
+					ghostManager.createGhostAvatar(ghostID, ghostPosition, score, crownOn);
 				}	
 				catch (IOException e)
 				{	
@@ -103,7 +105,7 @@ public class ProtocolClient extends GameConnectionClient
 				// Send the local client's avatar's information
 				// Parse out the id into a UUID
 				UUID ghostID = UUID.fromString(messageTokens[1]);
-				sendDetailsForMessage(ghostID, game.getPlayerPosition(), game.getPlayerScore());
+				sendDetailsForMessage(ghostID, game.getPlayerPosition(), game.getPlayerScore(), game.isCrownAttach());
 			}
 			
 			// Handle MOVE message
@@ -311,7 +313,7 @@ public class ProtocolClient extends GameConnectionClient
 	// with the server.
 	// Message Format: (create,localId,x,y,z) where x, y, and z represent the position
 
-	public void sendCreateMessage(Vector3f position, int score)
+	public void sendCreateMessage(Vector3f position, int score, boolean crownOn)
 	{	
 		try 
 		{	
@@ -320,6 +322,7 @@ public class ProtocolClient extends GameConnectionClient
 			message += "," + position.y();
 			message += "," + position.z();
 			message += "," + score;
+			message += "," + crownOn;
 			sendPacket(message);
 		} 
 		catch (IOException e) 
@@ -334,7 +337,7 @@ public class ProtocolClient extends GameConnectionClient
 	// from the server.
 	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the position.
 
-	public void sendDetailsForMessage(UUID remoteId, Vector3f position, int score)
+	public void sendDetailsForMessage(UUID remoteId, Vector3f position, int score, boolean crownOn)
 	{	
 		try 
 		{	
@@ -343,6 +346,7 @@ public class ProtocolClient extends GameConnectionClient
 			message += "," + position.y();
 			message += "," + position.z();
 			message += "," + score;
+			message += "," + crownOn;
 			sendPacket(message);
 		} 
 		catch (IOException e) 

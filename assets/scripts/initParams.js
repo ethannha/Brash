@@ -8,7 +8,7 @@ var b1Z = 0.0;
 
 // Avatar
 var avatarPosX = 0.0;
-var avatarPosY = 0.65;
+var avatarPosY = 0.5;
 var avatarPosZ = 7.0;
 
 // Ghost

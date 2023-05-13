@@ -58,7 +58,7 @@ public class MyGame extends VariableFrameRateGame
 	private int serverPort;
 	private ProtocolType serverProtocol;
 	private ProtocolClient protClient;
-	private boolean isClientConnected = false;
+	private boolean isClientConnected = false, crownAttach = false;
 
 	public float boxSpacing = 2.0f;
 
@@ -366,7 +366,7 @@ public class MyGame extends VariableFrameRateGame
 		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		avatarP = physicsEngine.addBoxObject(physicsEngine.nextUID(), mass, tempTransform, size);
-		avatarP.setBounciness(0.0f);
+		avatarP.setBounciness(0.01f);
 		avatar.setPhysicsObject(avatarP);
 
 		translation = new Matrix4f(worldTerrain.getLocalTranslation());
@@ -585,6 +585,11 @@ public class MyGame extends VariableFrameRateGame
 		hitSound.play();
 	}
 
+	public void playCollectSound()
+	{
+		collectSound.play();
+	}
+
 	public void createViewports()
 	{
 		(engine.getRenderSystem()).addViewport("MAIN", 0.0f, 0.0f, 1.0f, 1.0f);
@@ -700,6 +705,16 @@ public class MyGame extends VariableFrameRateGame
 		return ghostPos;
 	}
 
+	public boolean isCrownAttach()
+	{
+		return crownAttach;
+	}
+
+	public void setCrownAttach(boolean c)
+	{
+		crownAttach = c;
+	}
+
 	public float getElapseTime()
 	{
 		return (float)((currFrameTime - lastFrameTime) / 1000.0);
@@ -729,6 +744,11 @@ public class MyGame extends VariableFrameRateGame
 		{
 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
 		}
+	}
+
+	public void toggleAttachController()
+	{
+		attachNode.toggle();
 	}
 
 	public void setIsConnected(boolean b)
@@ -809,11 +829,11 @@ public class MyGame extends VariableFrameRateGame
 
 		prevHeight = currHeight;
 
-		if (isAvatarCollidingObj(crown))
-		{
-			attachNode.toggle();
-			collectSound.play();
-		}
+		// if (isAvatarCollidingObj(crown))
+		// {
+		// 	attachNode.toggle();
+		// 	collectSound.play();
+		// }
 
 		// update physics
 		if (running)

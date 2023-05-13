@@ -66,7 +66,8 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				String[] pos = {messageTokens[2], messageTokens[3], messageTokens[4]};
 				int score = Integer.parseInt(messageTokens[5]);
-				sendCreateMessages(clientID, pos, score);
+				boolean crownOn = Boolean.parseBoolean(messageTokens[6]);
+				sendCreateMessages(clientID, pos, score, crownOn);
 				sendWantsDetailsMessages(clientID);
 			}
 			
@@ -78,7 +79,8 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 				UUID remoteID = UUID.fromString(messageTokens[2]);
 				String[] pos = {messageTokens[3], messageTokens[4], messageTokens[5]};
 				int score = Integer.parseInt(messageTokens[6]);
-				sendDetailsForMessage(clientID, remoteID, pos, score);
+				boolean crownOn = Boolean.parseBoolean(messageTokens[7]);
+				sendDetailsForMessage(clientID, remoteID, pos, score, crownOn);
 			}
 			
 			// MOVE --- Case where server receives a move message
@@ -224,7 +226,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 	// connected to the server. 
 	// Message Format: (create,remoteId,x,y,z) where x, y, and z represent the position
 
-	public void sendCreateMessages(UUID clientID, String[] position, int score)
+	public void sendCreateMessages(UUID clientID, String[] position, int score, boolean crownOn)
 	{	
 		try 
 		{	String message = new String("create," + clientID.toString());
@@ -232,6 +234,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			message += "," + position[1];
 			message += "," + position[2];
 			message += "," + score;
+			message += "," + crownOn;
 			forwardPacketToAll(message, clientID);
 		} 
 		catch (IOException e) 
@@ -246,7 +249,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 	// remoteId is used to send this message to the proper client. 
 	// Message Format: (dsfr,remoteId,x,y,z) where x, y, and z represent the position.
 
-	public void sendDetailsForMessage(UUID clientID, UUID remoteId, String[] position, int score)
+	public void sendDetailsForMessage(UUID clientID, UUID remoteId, String[] position, int score, boolean crownOn)
 	{	
 		try 
 		{	
@@ -255,6 +258,7 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			message += "," + position[1];
 			message += "," + position[2];
 			message += "," + score;
+			message += "," + crownOn;
 			sendPacket(message, clientID);
 		} 
 		catch (IOException e) 

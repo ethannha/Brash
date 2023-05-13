@@ -24,12 +24,12 @@ public class GhostManager
 		game = (MyGame)vfrg;
 	}
 	
-	public void createGhostAvatar(UUID id, Vector3f position, int score) throws IOException
+	public void createGhostAvatar(UUID id, Vector3f position, int score, boolean crownOn) throws IOException
 	{	
 		System.out.println("adding ghost with ID --> " + id);
 		ObjShape s = game.getGhostShape();
 		TextureImage t = game.getGhostTexture();
-		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position);
+		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position, crownOn);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.25f);
 		newAvatar.setLocalScale(initialScale);
 		ghostAvatars.add(newAvatar);
@@ -84,7 +84,28 @@ public class GhostManager
 			}
 			return message;
 		}
-		
+	}
+
+	public boolean hasHighestPlayerScore(int score)
+	{
+		for (Map.Entry<String, Integer> entry : ghostScoreList.entrySet())
+		{
+			String ghostID = entry.getKey();
+			int ghostScore = entry.getValue();
+			if (ghostScore > score)
+			{
+				return false;
+			}
+			else
+			{
+				GhostAvatar ghost = findAvatar(UUID.fromString(ghostID));
+				if (ghost.getCrown() == true)
+				{
+					ghost.setCrown(false);
+				}
+			}
+		}
+		return true;
 	}
 
 	public int getGhostScore(UUID ghostID)
@@ -110,6 +131,10 @@ public class GhostManager
 	public void updateGhostScore(UUID clientID, int score)
     {
         ghostScoreList.replace(clientID.toString(), score);
+		if (hasHighestPlayerScore(score))
+		{
+			game.toggleAttachController();
+		}
     }
 	
 	public void updateGhostAvatar(UUID id, Vector3f position)

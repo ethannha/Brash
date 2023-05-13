@@ -35,6 +35,14 @@ public class PunchAction extends AbstractInputAction
                 game.getBoxManager().removeBox(b.getID());
                 protClient.sendRemoveBoxObject(b.getID());
                 game.increasePlayerScore();
+
+                if (game.getGhostManager().hasHighestPlayerScore(game.getPlayerScore()))
+                {
+                    game.setCrownAttach(true);
+                    game.toggleAttachController();
+                    game.playCollectSound()
+                }
+
                 break;
             }
         }
