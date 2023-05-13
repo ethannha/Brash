@@ -1,6 +1,7 @@
 package tage;
 import org.joml.Vector3f;
 
+import client.MyGame;
 import net.java.games.input.Event;
 import tage.Camera;
 import tage.Engine;
@@ -12,33 +13,38 @@ import java.lang.Math;
 
 public class CameraOrbitController 
 {
+    private MyGame game;
     private Engine engine;
     private Camera camera;                 // The camera being controlled
     private GameObject avatar;          // The target avatar the camera looks at
     private float cameraAzimuth;        // Rotation around the target Y-axis
     private float cameraElevation;      // Elevation of camera above target
     private float cameraRadius;         // Distance between camera and target
+    private float speedIncrement;
     
-    public CameraOrbitController(Camera cam, GameObject av, String gpName, Engine e)
+    public CameraOrbitController(Camera cam, GameObject av, String gpName, Engine e, MyGame g)
     {
+        game = g;
         engine = e;
         camera = cam;
         avatar = av;
         cameraAzimuth = 0.0f;
-        cameraElevation = 20.0f;
-        cameraRadius = 2.0f;
+        cameraElevation = 30.0f;
+        cameraRadius = 3.0f;
+        speedIncrement = 40.0f;
+
         setUpInputs(gpName);
         updateCameraPosition();
     }
 
     private void setUpInputs(String gp)
     {
-        OribitAzimuthAction azmAction = new OribitAzimuthAction();
+        OrbitAzimuthAction azmAction = new OrbitAzimuthAction();
         OrbitRadiusAction radiusAction = new OrbitRadiusAction();
         OrbitElevationAction eleAction = new OrbitElevationAction();
         InputManager im = engine.getInputManager();
 
-        OribitAzimuthActionOpposite azmActionOppo = new OribitAzimuthActionOpposite();
+        OrbitAzimuthActionOpposite azmActionOppo = new OrbitAzimuthActionOpposite();
         OrbitRadiusActionOpposite radiusActionOppo = new OrbitRadiusActionOpposite();
         OrbitElevationActionOpposite eleActionOppo = new OrbitElevationActionOpposite();
 
@@ -67,18 +73,20 @@ public class CameraOrbitController
     {
 
         Vector3f avatarRot = avatar.getWorldForwardVector();
-        double avatarAngle = Math.toDegrees((double)avatarRot.angleSigned(new Vector3f(0.0f, 0.0f, -1f), new Vector3f(0.0f, 1.0f, 0.0f)));
+        double avatarAngle = Math.toDegrees((double)avatarRot.angleSigned(new Vector3f(0.0f, 0.0f, -1.0f), new Vector3f(0.0f, 1.0f, 0.0f)));
         float totalAz = cameraAzimuth - (float)avatarAngle;
         double theta = Math.toRadians(cameraAzimuth);
         double phi = Math.toRadians(cameraElevation);
         float x = cameraRadius * (float)(Math.cos(phi) * Math.sin(theta));
         float y = cameraRadius * (float)Math.sin(phi);
         float z = cameraRadius * (float)(Math.cos(phi) * Math.cos(theta));
-        camera.setLocation(new Vector3f(x, y, z).add(avatar.getWorldLocation()));
-        camera.lookAt(avatar);
+
+        Vector3f avatarLoc = new Vector3f(avatar.getWorldLocation());
+        camera.setLocation(new Vector3f(x, y, z).add(avatarLoc));
+        camera.lookAt(avatarLoc.x, avatarLoc.y + 0.8f, avatarLoc.z);
     }
 
-    private class OribitAzimuthAction extends AbstractInputAction
+    private class OrbitAzimuthAction extends AbstractInputAction
     {
         @Override
         public void performAction(float time, Event evt) 
@@ -86,17 +94,17 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -0.5f;
+                rotAmount = -(speedIncrement * game.getElapseTime());
             }
             else
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = 0.5f;
+                    rotAmount = (speedIncrement * game.getElapseTime());
                 }
                 else
                 {
-                    rotAmount = 0.0f;
+                    rotAmount = (speedIncrement * game.getElapseTime());
                 }
             }
             cameraAzimuth += rotAmount;
@@ -105,7 +113,7 @@ public class CameraOrbitController
         }
     }
 
-    private class OribitAzimuthActionOpposite extends AbstractInputAction
+    private class OrbitAzimuthActionOpposite extends AbstractInputAction
     {
         @Override
         public void performAction(float time, Event evt) 
@@ -113,7 +121,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -0.5f;
+                rotAmount = -(speedIncrement * game.getElapseTime());
             }
             else
             {
@@ -133,7 +141,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() < -0.2)
             {
-                rotAmount = -0.5f;
+                rotAmount = -(speedIncrement * game.getElapseTime())/8;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -143,14 +151,18 @@ public class CameraOrbitController
             {
                 if (evt.getValue() > 0.2)
                 {
-                    rotAmount = 0.5f;
+                    rotAmount = (speedIncrement * game.getElapseTime())/8;
                 }
                 else
                 {
                     rotAmount = 0.0f;
                 }
             }
-            cameraRadius += rotAmount;
+            
+            if(cameraRadius + rotAmount > 2.0f && cameraRadius + rotAmount < 10.0f)
+            {
+                cameraRadius += rotAmount;
+            }
             cameraRadius = cameraRadius % 360;
             updateCameraPosition();
         } 
@@ -164,7 +176,7 @@ public class CameraOrbitController
             float rotAmount;
             if (evt.getValue() > 0.2)
             {
-                rotAmount = -0.5f;
+                rotAmount = -(speedIncrement * game.getElapseTime())/8;
                 if (cameraRadius <= 1.0f)
                 {
                     rotAmount = 0.0f;
@@ -174,7 +186,11 @@ public class CameraOrbitController
             {
                 rotAmount = 0.0f;
             }
-            cameraRadius += rotAmount;
+
+            if(cameraRadius + rotAmount > 2.0f && cameraRadius + rotAmount < 10.0f)
+            {
+                cameraRadius += rotAmount;
+            }
             cameraRadius = cameraRadius % 360;
             updateCameraPosition();
         } 
@@ -191,7 +207,7 @@ public class CameraOrbitController
             
             if (evt.getValue() < -0.2)
             {
-                eleAmount = -0.5f;
+                eleAmount = -(speedIncrement * game.getElapseTime());
                 if (cameraElevation <= 1.0f)
                 {
                     eleAmount = 0.0f;
@@ -201,14 +217,18 @@ public class CameraOrbitController
             {
                 if (evt.getValue() > 0.2)
                 {
-                    eleAmount = 0.5f;
+                    eleAmount = (speedIncrement * game.getElapseTime());
                 }
                 else
                 {
                     eleAmount = 0.0f;
                 }
             }
-            cameraElevation += eleAmount;
+
+            if(cameraElevation + eleAmount > 10.0f && cameraElevation + eleAmount < 80.0f)
+            {
+                cameraElevation += eleAmount;
+            }
             cameraRadius = cameraRadius % 360;
             updateCameraPosition();
         } 
@@ -223,7 +243,7 @@ public class CameraOrbitController
             float eleAmount;
             if (evt.getValue() > 0.2)
             {
-                eleAmount = -0.5f;
+                eleAmount = -(speedIncrement * game.getElapseTime());
                 if (cameraElevation <= 1.0f)
                 {
                     eleAmount = 0.0f;
@@ -233,7 +253,11 @@ public class CameraOrbitController
             {
                 eleAmount = 0.0f;
             }
-            cameraElevation += eleAmount;
+            
+            if(cameraElevation + eleAmount > 10.0f && cameraElevation + eleAmount < 80.0f)
+            {
+                cameraElevation += eleAmount;
+            }
             cameraRadius = cameraRadius % 360;
             updateCameraPosition();
         } 

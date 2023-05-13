@@ -1,3 +1,5 @@
+package server;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.UUID;
@@ -149,9 +151,9 @@ public class GameServerTCP extends GameConnectionServer<UUID>
 	}
 	
 	/**
-	 * Informs a client of the details for a remote client’s avatar. This message is in response 
-	 * to the server receiving a DETAILS_FOR message from a remote client. That remote client’s 
-	 * message’s localId becomes the remoteId for this message, and the remote client’s message’s 
+	 * Informs a client of the details for a remote clientï¿½s avatar. This message is in response 
+	 * to the server receiving a DETAILS_FOR message from a remote client. That remote clientï¿½s 
+	 * messageï¿½s localId becomes the remoteId for this message, and the remote clientï¿½s messageï¿½s 
 	 * remoteId is used to send this message to the proper client. 
 	 * <p>
 	 * Message Format: (dsfr,remoteId,x,y,z) where x, y, and z represent the position.
@@ -170,7 +172,7 @@ public class GameServerTCP extends GameConnectionServer<UUID>
 	}
 	
 	/**
-	 * Informs a local client that a remote client wants the local client’s avatar’s information. 
+	 * Informs a local client that a remote client wants the local clientï¿½s avatarï¿½s information. 
 	 * This message is meant to be sent to all clients connected to the server when a new client 
 	 * joins the server. 
 	 * <p>
@@ -187,7 +189,7 @@ public class GameServerTCP extends GameConnectionServer<UUID>
 	}
 	
 	/**
-	 * Informs a client that a remote client’s avatar has changed position. x, y, and z represent 
+	 * Informs a client that a remote clientï¿½s avatar has changed position. x, y, and z represent 
 	 * the new position of the remote avatar. This message is meant to be forwarded to all clients
 	 * connected to the server when it receives a MOVE message from the remote client.   
 	 * <p>

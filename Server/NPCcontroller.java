@@ -1,3 +1,5 @@
+package server;
+
 import java.util.Random;
 
 import tage.ai.behaviortrees.BTCompositeType;

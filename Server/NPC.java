@@ -1,3 +1,5 @@
+package server;
+
 import org.joml.Vector3f;
 
 public class NPC 

@@ -1,0 +1,1 @@
+javac -Xlint:unchecked client/*.java

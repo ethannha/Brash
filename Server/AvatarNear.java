@@ -1,3 +1,5 @@
+package server;
+
 import tage.ai.behaviortrees.BTCondition;
 
 public class AvatarNear extends BTCondition

@@ -28,7 +28,7 @@ public class AttachController extends NodeController
     @Override
     public void apply(GameObject t) 
     {   
-        Matrix4f intialTranslation = (new Matrix4f()).translation(0, 1, 0);
+        Matrix4f intialTranslation = (new Matrix4f()).translation(0.0f, 1.3f, 0.0f);
         t.setLocalTranslation(intialTranslation);
         t.setParent(avatar);
         t.propagateTranslation(true);
