@@ -40,7 +40,7 @@ public class PunchAction extends AbstractInputAction
                 {
                     game.setCrownAttach(true);
                     game.toggleAttachController();
-                    game.playCollectSound()
+                    game.playCollectSound();
                 }
 
                 break;
