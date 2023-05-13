@@ -6,7 +6,7 @@ public class NPC
     double size = 1.0;
     boolean seePlayer = false, seeGhost = false;
     Vector3f targetLocationAv, targetLocationGhost;
-    float speed = 0.01f;
+    float speed = 0.02f;
     Vector3f npcLocation;
 
 
@@ -18,7 +18,7 @@ public class NPC
     public void randomizeLocation(int seedX, int seedZ)
     {
         npcLocation.x = (float)(((double)seedX) / 4.0 - 5.0);
-        npcLocation.y = 0;
+        npcLocation.y = 0.8f;
         npcLocation.z = -2;
     }
 

@@ -16,7 +16,6 @@ public class ProtocolClient extends GameConnectionClient
 	private MyGame game;
 	private GhostManager ghostManager;
 	private BoxManager boxManager;
-	//private PlayerManager playerManager;
 	private UUID id;
 	private GhostNPC ghostNPC;
 	
@@ -27,7 +26,6 @@ public class ProtocolClient extends GameConnectionClient
 		this.id = UUID.randomUUID();
 		ghostManager = game.getGhostManager();
 		boxManager = game.getBoxManager();
-		//playerManager = game.getPlayerManager();
 	}
 	
 	public UUID getID() { return id; }
@@ -197,6 +195,12 @@ public class ProtocolClient extends GameConnectionClient
 				{
 					sendNPCisAvNear(game.getAvatar().getWorldLocation(), false);
 				}
+			
+				if (game.getAvatar().getWorldLocation().distance(ghostNPCPosition.x(), ghostNPCPosition.y(), ghostNPCPosition.z()) < 0.75f)
+				{
+					game.setIsAlive(false);
+					sendNPCisAvNear(new Vector3f(0.0f, 0.0f, 0.0f), false);
+				}
 
 				Vector<GhostAvatar> ghostList = ghostManager.getAllGhost();
 				Iterator<GhostAvatar> it = ghostList.iterator();
@@ -214,6 +218,12 @@ public class ProtocolClient extends GameConnectionClient
 					{
 						sendNPCisGhostNear(ghostAvatar.getPosition(), false);
 					}
+
+					if (ghostAvatar.getPosition().distance(ghostNPCPosition.x(), ghostNPCPosition.y(), ghostNPCPosition.z()) < 0.75f)
+					{
+						sendNPCisGhostNear(new Vector3f(0.0f, 0.0f, 0.0f), false);
+					}
+
 				}
 				//System.out.println("Successful updated ghost info ---------------------------");
 			}
@@ -282,11 +292,13 @@ public class ProtocolClient extends GameConnectionClient
 	// Informs the server that the client is leaving the server. 
 	// Message Format: (bye,localId)
 
-	public void sendByeMessage()
+	public void sendByeMessage(int score)
 	{	
 		try 
-		{	
-			sendPacket(new String("bye," + id.toString()));
+		{
+			String message = new String("bye," + id.toString());
+			message += "," + score;
+			sendPacket(message);
 		} 
 		catch (IOException e) 
 		{	

@@ -6,11 +6,6 @@ import tage.shapes.*;
 import java.lang.Math;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Map;
-import java.util.Random;
-import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.awt.Event;
 import java.awt.event.*;
 import java.io.*;
 
@@ -78,10 +73,8 @@ public class MyGame extends VariableFrameRateGame
 	private int hud1Height;
 
 	// Player
-	//private PlayerManager playerManager;
 	private int playerScore;
-	private double player1WinCounter;
-	private double player2WinCounter;
+	private boolean isAlive = true;
 
 	// Physics
 	private PhysicsEngine physicsEngine;
@@ -102,7 +95,6 @@ public class MyGame extends VariableFrameRateGame
 		super(); 
 		gm = new GhostManager(this);
 		bm = new BoxManager(this);
-		//playerManager = new PlayerManager(this);
 		this.serverAddress = serverAddress;
 		this.serverPort = serverPort;
 		if (protocol.toUpperCase().compareTo("TCP") == 0)
@@ -352,7 +344,6 @@ public class MyGame extends VariableFrameRateGame
 		script1 = new File("assets/scripts/initParams.js");
 		this.runScript(script1);
 		playerScore = (int)(jsEngine.get("p1Win"));
-		//playerManager.addPlayer(protClient.getID(), playerScore);
 
 		hud1Height = ((int)jsEngine.get("hud1Height"));
 
@@ -376,7 +367,7 @@ public class MyGame extends VariableFrameRateGame
 		Matrix4f translation = new Matrix4f(avatar.getLocalTranslation());
 		tempTransform = toDoubleArray(translation.get(vals));
 		avatarP = physicsEngine.addBoxObject(physicsEngine.nextUID(), mass, tempTransform, size);
-		avatarP.setBounciness(1.0f);
+		avatarP.setBounciness(0.0f);
 		avatar.setPhysicsObject(avatarP);
 
 		translation = new Matrix4f(worldTerrain.getLocalTranslation());
@@ -407,7 +398,7 @@ public class MyGame extends VariableFrameRateGame
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, turnRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.F, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		//im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
-		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.SPACE, jumpAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.SPACE, jumpAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
@@ -472,7 +463,7 @@ public class MyGame extends VariableFrameRateGame
 				break;
 			case KeyEvent.VK_ESCAPE:
 				System.out.println("CLIENT SEND BYE MESSAGE");
-				protClient.sendByeMessage();
+				protClient.sendByeMessage(playerScore);
 				this.shutdown();
 				System.exit(0);
 				break;
@@ -535,7 +526,7 @@ public class MyGame extends VariableFrameRateGame
 				if (contacPoint.getDistance() < 0.0f)
 				{
 					System.out.println("---- hit between " + obj1 + " and " + obj2);
-					running = false;
+					//running = false;
 					break;
 				}
 			}
@@ -693,11 +684,6 @@ public class MyGame extends VariableFrameRateGame
 		return ghostPos;
 	}
 
-	// public PlayerManager getPlayerManager()
-	// {
-	// 	return playerManager;
-	// }
-
 	public Engine getEngine()
 	{
 		return engine;
@@ -728,7 +714,23 @@ public class MyGame extends VariableFrameRateGame
 
 	public void increasePlayerScore()
 	{
-		playerScore++;
+		try
+		{
+			playerScore = (int)((double)invocableEngine.invokeFunction("updateWinCount", playerScore));
+			protClient.sendUpdatePlayerScore(playerScore);
+		}
+		catch (ScriptException e1)
+		{
+			System.out.println("ScriptException in " + script2 + "; " + e1);
+		}
+		catch (NoSuchMethodException e2)
+		{
+			System.out.println("No such function/method in " + script2 + "; " + e2);
+		}
+		catch (NullPointerException e3)
+		{
+			System.out.println("Null ptr exception in " + script2 + "; " + e3);
+		}
 	}
 
 	public void setIsConnected(boolean b)
@@ -848,38 +850,28 @@ public class MyGame extends VariableFrameRateGame
 			hud1Height = (int)jsEngine.get("hud1Height");
 
 		}
-		//System.out.println("AVATARP TRANSFORM: " + toFloatArray(avatarP.getTransform())[12] + ", " + toFloatArray(avatarP.getTransform())[13] + ", " + toFloatArray(avatarP.getTransform())[14]);
 
-		// if (Math.abs(avatar.getLocalLocation().distance(boxObject.getWorldLocation().x(), boxObject.getWorldLocation().y(), 
-		// boxObject.getWorldLocation().z())) <= 2)
-		// {
-		// 	if (itemHolding != 0)
-		// 	{
-		// 		removePrize(attachNode, prizeItem);
-		// 		score++;
-		// 		try
-		// 		{
-		// 			player1WinCounter =  (double)invocableEngine.invokeFunction("updateWinCount", player1WinCounter);
-		// 			//player2WinCounter = (double)invocableEngine.invokeFunction("updateWinCount", player2WinCounter);
-					
-		// 		}
-		// 		catch (ScriptException e1)
-		// 		{
-		// 			System.out.println("ScriptException in " + script2 + "; " + e1);
-		// 		}
-		// 		catch (NoSuchMethodException e2)
-		// 		{
-		// 			System.out.println("No such function/method in " + script2 + "; " + e2);
-		// 		}
-		// 		catch (NullPointerException e3)
-		// 		{
-		// 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
-		// 		}
-		// 		itemHolding--;
-		// 	}
-		// }
+		if (!isAlive)
+		{
+			gameOver();
+		}
+
+
 		protClient.processPackets();
 		processNetworking((float)elapsTime);
+	}
+
+	public void gameOver()
+	{
+		System.out.println("\n\nYOU WERE KILLED BY THE NPC!!! \nYOUR TOTAL POINTS: " + playerScore);
+		protClient.sendByeMessage(playerScore);
+		this.shutdown();
+		System.exit(0);
+	}
+
+	public void setIsAlive(boolean c)
+	{
+		isAlive = c;
 	}
 
 	protected void processNetworking(float elapsTime)
@@ -899,7 +891,7 @@ public class MyGame extends VariableFrameRateGame
 		{
 			if (protClient != null && isClientConnected == true)
 			{
-				protClient.sendByeMessage();
+				protClient.sendByeMessage(playerScore);
 			}
 		}
 	}

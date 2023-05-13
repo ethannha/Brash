@@ -64,19 +64,27 @@ public class GhostManager
 
 	public String getGhostScore(UUID clientID, String message)
 	{
-		int counter = 1;
-		for (Map.Entry<String, Integer> entry : ghostScoreList.entrySet())
+		if (ghostScoreList.isEmpty())
 		{
-			String ghostID = entry.getKey();
-			
-			if (!ghostID.equals(clientID.toString()))
-			{
-				int score = entry.getValue();
-				message += "Ghost " + counter + ": " + score + "   ||";
-				counter++;
-			}
+			return message;
 		}
-		return message;
+		else
+		{
+			int counter = 1;
+			for (Map.Entry<String, Integer> entry : ghostScoreList.entrySet())
+			{
+				String ghostID = entry.getKey();
+				
+				if (!ghostID.equals(clientID.toString()))
+				{
+					int score = entry.getValue();
+					message += "Ghost " + counter + ": " + score + "   ||";
+					counter++;
+				}
+			}
+			return message;
+		}
+		
 	}
 
 	public int getGhostScore(UUID ghostID)

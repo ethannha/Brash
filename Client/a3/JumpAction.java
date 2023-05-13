@@ -14,7 +14,7 @@ public class JumpAction extends AbstractInputAction
     private MyGame game;
     private PhysicsObject avatarP;
     private ProtocolClient protClient;
-    private float forceApplied = 8.0f;
+    private float[] linVel = {0.0f, 5.0f, 0.0f};
 
 
     public JumpAction(MyGame g, PhysicsObject aP, ProtocolClient pClient)
@@ -24,15 +24,6 @@ public class JumpAction extends AbstractInputAction
         protClient = pClient;
     }
 
-    protected void reverseForce()
-    {
-        forceApplied = -8.0f;
-    }
-
-    protected void revertForce()
-    {
-        forceApplied = 8.0f;
-    }
 
     @Override
     public void performAction(float time, Event evt) 
@@ -43,24 +34,21 @@ public class JumpAction extends AbstractInputAction
         //System.out.println("Transform VEL: " + avatarP.getTransform()[13]);
         
         // Get the local up direction of the avatar
-        Vector3f up = game.getAvatar().getLocalUpVector();
 
-        if (avatarP.getTransform()[13] > 3.0f)
+        if (avatarP.getTransform()[13] > 2.0f)
         {
-            reverseForce();
+            linVel = new float[]{0.0f, 0.0f, 0.0f};
             //System.out.println("REVERSING IN THE OPPOSITE WAY");
         }
-        else if (avatarP.getTransform()[13] <= 0.0f)
+        else
         {
-            revertForce();
-            //System.out.println("REVERSING WHEN HITTING 0");
+            linVel = new float[]{0.0f, 5.0f, 0.0f};
         }
 
         game.setRunning(true);
 
         // Apply a force in the local y-direction of the avatar
-        avatarP.applyForce(0.0f, forceApplied, 0.0f, up.x, up.y, up.z);
-
+        avatarP.setLinearVelocity(linVel);
         //System.out.println("Linear VEL: " + avatarP.getLinearVelocity()[0] + ", " + avatarP.getLinearVelocity()[1] + ", " + avatarP.getLinearVelocity()[2]);
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }

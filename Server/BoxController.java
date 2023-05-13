@@ -32,6 +32,6 @@ public class BoxController
     private void setupBox()
     {
         box = new Box();
-        box.setPosition(new Vector3f(-5.0f, 1.0f, 0.0f));
+        box.setPosition(new Vector3f(-5.0f, 1.0f, -4.0f));
     }
 }

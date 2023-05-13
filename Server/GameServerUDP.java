@@ -51,7 +51,8 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 			if(messageTokens[0].compareTo("bye") == 0)
 			{	
 				UUID clientID = UUID.fromString(messageTokens[1]);
-				System.out.println("Exit request received from - " + clientID.toString());
+				int score = Integer.parseInt(messageTokens[2]);
+				System.out.println("Exit request received from - " + clientID.toString() + "; their score was: " + score);
 				sendByeMessages(clientID);
 				removeClient(clientID);
 			}
@@ -441,7 +442,6 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 	// Sending Box message
 	public void sendBoxInfo(UUID clientID)
 	{
-		System.out.println("SERVER SENDING BOXXXXXXXXXXXXXXXXXXXX INFO");
 		try
 		{
 			String message = new String("boxinfo," + clientID.toString());

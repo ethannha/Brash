@@ -16,7 +16,7 @@ public class ShutDownAction extends AbstractInputAction
     @Override
     public void performAction(float time, Event e)
     {
-        protClient.sendByeMessage();
+        protClient.sendByeMessage(game.getPlayerScore());
         game.shutdown();
         System.exit(0);
     }
