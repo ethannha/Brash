@@ -261,14 +261,18 @@ public class MyGame extends VariableFrameRateGame
 		resource5 = audioMgr.createAudioResource("assets/sounds/jump.wav", AudioResourceType.AUDIO_SAMPLE);
 		resource6 = audioMgr.createAudioResource("assets/sounds/death.wav", AudioResourceType.AUDIO_SAMPLE);
 
-		bgmSound = new Sound(resource1, SoundType.SOUND_EFFECT, 50, true);
-		grassSound = new Sound(resource2, SoundType.SOUND_EFFECT, 50, true);
+		bgmSound = new Sound(resource1, SoundType.SOUND_EFFECT, 100, true);
+		grassSound = new Sound(resource2, SoundType.SOUND_EFFECT, 100, true);
 		collectSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, false);
 		hitSound = new Sound(resource4, SoundType.SOUND_EFFECT, 100, false);
 		jumpSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
 		deathSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
 		
 		bgmSound.initialize(audioMgr);
+		bgmSound.setMaxDistance(5.0f);
+		bgmSound.setMinDistance(1.0f);
+		bgmSound.setRollOff(5.0f);
+		bgmSound.setLocation(jukeBoxObject.getWorldLocation());
 
 		grassSound.initialize(audioMgr);
 		grassSound.setMaxDistance(10.0f);
@@ -767,6 +771,7 @@ public class MyGame extends VariableFrameRateGame
 		elapsTime += (currFrameTime - lastFrameTime) / 1000.0;
 
 		// update sound
+		bgmSound.setLocation(jukeBoxObject.getWorldLocation());
 		grassSound.setLocation(avatar.getWorldLocation());
 		hitSound.setLocation(avatar.getWorldLocation());
 		jumpSound.setLocation(avatar.getWorldLocation());
