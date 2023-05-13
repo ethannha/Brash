@@ -45,7 +45,7 @@ public class MyGame extends VariableFrameRateGame
 	private NodeController rotationNode;
 	private AttachController attachNode;
 	private IAudioManager audioMgr;
-	private Sound bgmSound, grassSound, collectSound, hitSound, jumpSound, deathSound;
+	private Sound bgmSound, grassSound, collectSound, hitSound, jumpSound, deathSound, breakSound;
 
 	private int sereneClouds; //skybox
 
@@ -83,7 +83,7 @@ public class MyGame extends VariableFrameRateGame
 	private float vals[] = new float[16];
 
 	// Animation
-	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape;
+	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape, npcAnimatedShape;
 
 	// NPC/AI
 	private ObjShape npcShape;
@@ -135,8 +135,12 @@ public class MyGame extends VariableFrameRateGame
 		ghostAnimatedShape.loadAnimation("PUNCHL", "player_punchL.rka");
 		ghostAnimatedShape.loadAnimation("PUNCHR", "player_punchR.rka");
 
+		npcAnimatedShape = new AnimatedShape("duck.rkm", "duck.rks");
+		npcAnimatedShape.loadAnimation("WALK", "duck_walk.rka");
+		npcAnimatedShape.loadAnimation("CHASE", "duck_chase.rka");
+
 		ghostS = new ImportedModel("player.obj");
-		npcShape = new ImportedModel("player.obj");
+		npcShape = new ImportedModel("duck.obj");
 		terrainS = new TerrainPlane(1000);
 
 		//Diamond object
@@ -239,7 +243,7 @@ public class MyGame extends VariableFrameRateGame
 
 	public void initAudio()
 	{ 
-		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
 		audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) { 
 			System.out.println("Audio Manager failed to initialize!");
@@ -251,13 +255,15 @@ public class MyGame extends VariableFrameRateGame
 		resource4 = audioMgr.createAudioResource("assets/sounds/hit.wav", AudioResourceType.AUDIO_SAMPLE);
 		resource5 = audioMgr.createAudioResource("assets/sounds/jump.wav", AudioResourceType.AUDIO_SAMPLE);
 		resource6 = audioMgr.createAudioResource("assets/sounds/death.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource7 = audioMgr.createAudioResource("assets/sounds/break.wav", AudioResourceType.AUDIO_SAMPLE);
 
 		bgmSound = new Sound(resource1, SoundType.SOUND_EFFECT, 100, true);
 		grassSound = new Sound(resource2, SoundType.SOUND_EFFECT, 100, true);
 		collectSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, false);
-		hitSound = new Sound(resource4, SoundType.SOUND_EFFECT, 100, false);
+		hitSound = new Sound(resource4, SoundType.SOUND_EFFECT, 75, false);
 		jumpSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
 		deathSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
+		breakSound = new Sound(resource7, SoundType.SOUND_EFFECT, 100, false);
 		
 		bgmSound.initialize(audioMgr);
 		bgmSound.setMaxDistance(5.0f);
@@ -276,6 +282,9 @@ public class MyGame extends VariableFrameRateGame
 		hitSound.setMinDistance(0.5f);
 		hitSound.setRollOff(5.0f);
 		hitSound.setLocation(avatar.getWorldLocation());
+
+		breakSound.initialize(audioMgr);
+		breakSound.setLocation(avatar.getWorldLocation());
 
 		jumpSound.initialize(audioMgr);
 		jumpSound.setLocation(avatar.getWorldLocation());
@@ -448,13 +457,13 @@ public class MyGame extends VariableFrameRateGame
 					avatarAnimatedShape.playAnimation("PUNCHR", 0.5f, AnimatedShape.EndType.NONE, 0);
 				}
 				hitSound.play();
+				breakSound.play();
 				break;
 			case KeyEvent.VK_H:
 				deathSound.play();
 				break;
 			case KeyEvent.VK_SPACE:
 				if (!avatarAnimatedShape.isPlayingAnimation("JUMP")) {
-					avatarAnimatedShape.stopAnimation();
 					avatarAnimatedShape.playAnimation("JUMP", 0.2f, AnimatedShape.EndType.LOOP, 0);
 				}
 				jumpSound.play();
@@ -794,6 +803,7 @@ public class MyGame extends VariableFrameRateGame
 		bgmSound.setLocation(jukeBoxObject.getWorldLocation());
 		grassSound.setLocation(avatar.getWorldLocation());
 		hitSound.setLocation(avatar.getWorldLocation());
+		breakSound.setLocation(avatar.getWorldLocation());
 		jumpSound.setLocation(avatar.getWorldLocation());
 		deathSound.setLocation(avatar.getWorldLocation());
 		collectSound.setLocation(crown.getWorldLocation());
