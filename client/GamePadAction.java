@@ -5,10 +5,12 @@ import net.java.games.input.Event;
 public class GamePadAction extends AbstractInputAction
 {
     private MyGame game;
+    private ProtocolClient protClient;
 
-    public GamePadAction (MyGame g)
+    public GamePadAction (MyGame g, ProtocolClient c)
     {
         game = g;
+        protClient = c;
     }
 
     @Override
@@ -22,5 +24,7 @@ public class GamePadAction extends AbstractInputAction
         {
             game.getAvatar().moveObjBack(e, game.getElapseTime());
         }
+        game.updateAvatarPhysicsObject();
+        protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }
 }

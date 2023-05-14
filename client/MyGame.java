@@ -267,7 +267,7 @@ public class MyGame extends VariableFrameRateGame
 		
 		bgmSound.initialize(audioMgr);
 		bgmSound.setMaxDistance(5.0f);
-		bgmSound.setMinDistance(1.0f);
+		bgmSound.setMinDistance(3.0f);
 		bgmSound.setRollOff(5.0f);
 		bgmSound.setLocation(jukeBoxObject.getWorldLocation());
 
@@ -394,9 +394,9 @@ public class MyGame extends VariableFrameRateGame
 		BackAction backAction = new BackAction(this, protClient);
 		TurnLeftAction turnLeftAction = new TurnLeftAction(this, protClient);
 		TurnRightAction turnRightAction = new TurnRightAction(this, protClient);
-		GamePadTurn gamePadTurn = new GamePadTurn(this);
-		GamePadAction gamePadAction = new GamePadAction(this);
-		//ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
+		GamePadTurn gamePadTurn = new GamePadTurn(this, protClient);
+		GamePadAction gamePadAction = new GamePadAction(this, protClient);
+		ShutDownAction shutDownAction = new ShutDownAction(this, protClient);
 		JumpAction jumpAction = new JumpAction(this, avatarP, protClient);
 		PunchAction punchAction = new PunchAction(this, protClient);
 
@@ -405,13 +405,15 @@ public class MyGame extends VariableFrameRateGame
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.A, turnLeftAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.D, turnRightAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.F, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		//im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, INPUT_ACTION_TYPE.ON_PRESS_AND_RELEASE);
+		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.ESCAPE, shutDownAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 		im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.SPACE, jumpAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
 
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.X, gamePadTurn, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
 		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Axis.Z, gamePadAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
-		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._1, jumpAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
-		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._3, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._0, jumpAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._2, punchAction, InputManager.INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);
+		im.associateActionWithAllGamepads(net.java.games.input.Component.Identifier.Button._7, shutDownAction, InputManager.INPUT_ACTION_TYPE.ON_PRESS_ONLY);
+
 	}
 
 	@Override
