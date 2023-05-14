@@ -65,7 +65,7 @@ public class GhostManager
 
 	public boolean hasGhosts()
 	{
-		return ghostAvatars.isEmpty();
+		return !ghostAvatars.isEmpty();
 	}
 
 	public String getGhostScore(UUID clientID, String message)
@@ -154,6 +154,30 @@ public class GhostManager
 		{	
 			System.out.println("tried to update ghost avatar position, but unable to find ghost in list");
 		}
+	}
+
+	public void changeGhostAnimation(UUID id, String aniName)
+	{
+		GhostAvatar ghostAvatar = findAvatar(id);
+		if (ghostAvatar != null)
+		{
+			ghostAvatar.playAnimation(aniName);
+		}
+		else
+		{
+			System.out.println("tried to update ghost avatar animation, but unable to find ghost in list");
+		}
+	}
+
+	public void updateGhostAnimation()
+	{
+		GhostAvatar ghostAvatar;
+		Iterator<GhostAvatar> it = ghostAvatars.iterator();
+		while(it.hasNext())
+		{	
+			ghostAvatar = it.next();
+			ghostAvatar.updateGhostAnimatedShape();
+		}	
 	}
 
 	public void updateGhostAvatarRotation(UUID id, Matrix4f rotation)

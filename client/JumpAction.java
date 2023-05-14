@@ -42,6 +42,7 @@ public class JumpAction extends AbstractInputAction
             game.stopJumpAction();
             //System.out.println("Linear VEL: " + avatarP.getLinearVelocity()[0] + ", " + avatarP.getLinearVelocity()[1] + ", " + avatarP.getLinearVelocity()[2]);
             protClient.sendMoveMessage(game.getAvatar().getWorldLocation());   
+            protClient.sendAnimation("JUMP");
         }
     }
 }

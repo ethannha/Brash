@@ -17,10 +17,12 @@ public class GhostAvatar extends GameObject
 {
 	UUID uuid;
 	private boolean crown;
+	private AnimatedShape animatedShape;
 
-	public GhostAvatar(UUID id, ObjShape s, TextureImage t, Vector3f p, boolean crownOn) 
+	public GhostAvatar(UUID id, AnimatedShape s, TextureImage t, Vector3f p, boolean crownOn) 
 	{	
 		super(GameObject.root(), s, t);
+		animatedShape = s;
 		uuid = id;
 		setPosition(p);
 		crown = crownOn;
@@ -31,4 +33,10 @@ public class GhostAvatar extends GameObject
 	public Vector3f getPosition() { return getWorldLocation(); }
 	public void setCrown(boolean c) { crown = c; }
 	public boolean getCrown() { return crown; }
+	public void updateGhostAnimatedShape() { animatedShape.updateAnimation(); }
+
+	public void playAnimation(String aniName)
+	{
+		animatedShape.playAnimation(aniName, 0.2f, AnimatedShape.EndType.LOOP, 0);
+	}
 }

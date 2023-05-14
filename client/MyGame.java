@@ -84,6 +84,7 @@ public class MyGame extends VariableFrameRateGame
 
 	// Animation
 	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape, npcAnimatedShape;
+	private String aniName;
 
 	// NPC/AI
 	private ObjShape npcShape;
@@ -383,6 +384,9 @@ public class MyGame extends VariableFrameRateGame
 		planeP = physicsEngine.addStaticPlaneObject(physicsEngine.nextUID(), tempTransform, up, 0.0f);
 		planeP.setBounciness(1.0f);
 		worldTerrain.setPhysicsObject(planeP);
+
+		// --------------------- Animation ---------------------
+		aniName = "IDLE";
 
 		// --------------------- INPUT SECTION -----------------------
 		im = engine.getInputManager();
@@ -805,6 +809,16 @@ public class MyGame extends VariableFrameRateGame
 		return avatarAnimatedShape;
 	}
 
+	public String getAnimationName()
+	{
+		return aniName;
+	}
+
+	public void setAnimationName(String a)
+	{
+		aniName = a;
+	}
+
 	@Override
 	public void update()
 	{	
@@ -843,7 +857,7 @@ public class MyGame extends VariableFrameRateGame
 
 		if (gm.hasGhosts())
 		{
-			ghostAnimatedShape.updateAnimation();
+			gm.updateGhostAnimation();
 		}
 
 		// update altitude of avatar based on height mapping

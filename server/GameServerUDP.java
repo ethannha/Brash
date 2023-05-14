@@ -92,6 +92,13 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 				sendMoveMessages(clientID, pos);
 			}
 
+			if (messageTokens[0].compareTo("animate") == 0)
+			{
+				UUID clientID = UUID.fromString(messageTokens[1]);
+				String aniName = messageTokens[2];
+				sendAnimation(clientID, aniName);
+			}
+
 			if (messageTokens[0].compareTo("rotate") == 0)
 			{
 				//System.out.println("================================== SERVER ROTATING: " + messageTokens[2] + ", " + messageTokens[3] + ", " + messageTokens[4] + ", " + messageTokens[5]);
@@ -302,6 +309,20 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 		} 
 		catch (IOException e) 
 		{	
+			e.printStackTrace();
+		}
+	}
+
+	public void sendAnimation(UUID clientID, String aniName)
+	{
+		try
+		{
+			String message = new String("animate," + clientID.toString());
+			message += "," + aniName;
+			forwardPacketToAll(message, clientID);
+		}
+		catch (IOException e)
+		{
 			e.printStackTrace();
 		}
 	}

@@ -22,5 +22,6 @@ public class BackAction extends AbstractInputAction
         //System.out.println("UPDATING PHYSICS OBJECT MOVE BACKWARD");
 
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
+        protClient.sendAnimation("BACK");
     }   
 }

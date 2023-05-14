@@ -125,6 +125,14 @@ public class ProtocolClient extends GameConnectionClient
 				ghostManager.updateGhostAvatar(ghostID, ghostPosition);
 			}
 
+			if (messageTokens[0].compareTo("animate") == 0)
+			{
+				UUID ghostID = UUID.fromString(messageTokens[1]);
+				String aniName = messageTokens[2];
+
+				ghostManager.changeGhostAnimation(ghostID, aniName);
+			}
+
 			if (messageTokens[0].compareTo("rotate") == 0)
 			{
 				UUID ghostID = UUID.fromString(messageTokens[1]);
@@ -373,6 +381,20 @@ public class ProtocolClient extends GameConnectionClient
 		{	
 			e.printStackTrace();
 		}	
+	}
+
+	public void sendAnimation(String aniName)
+	{
+		try
+		{
+			String message = new String("animate," + id.toString());
+			message += "," + aniName;
+			sendPacket(message);
+		}
+		catch (IOException e)
+		{
+			e.printStackTrace();
+		}
 	}
 	
 

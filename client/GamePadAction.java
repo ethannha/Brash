@@ -26,5 +26,6 @@ public class GamePadAction extends AbstractInputAction
         }
         game.updateAvatarPhysicsObject();
         protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
+        protClient.sendAnimation("RUN");
     }
 }

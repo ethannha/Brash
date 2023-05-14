@@ -47,6 +47,7 @@ public class PunchAction extends AbstractInputAction
             }
         }
 
+        protClient.sendAnimation("PUNCHR");
     }
     
 }
