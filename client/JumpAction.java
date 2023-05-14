@@ -33,7 +33,7 @@ public class JumpAction extends AbstractInputAction
 
         //System.out.println("Transform VEL: " + avatarP.getTransform()[13]);
 
-        // game.setRunning(true);
+        game.setRunning(true);
 
         if (game.getAvatarCanJump())
         {

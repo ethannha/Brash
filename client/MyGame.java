@@ -385,21 +385,6 @@ public class MyGame extends VariableFrameRateGame
 
 		// --------------------- Animation ---------------------
 		aniName = "IDLE";
-
-		// render random boxes
-		int numberOfBoxes = 20;
-		// boxSpacingX = new float[numberOfBoxes];
-		// boxSpacingZ = new float[numberOfBoxes];
-		// // random generator for box spacing x,z
-		// for(int i=0; i<numberOfBoxes; i++)
-		// {
-			
-		// 	boxSpacingX[i] = 2.0f + (rand.nextInt(2));
-		// 	boxSpacingZ[i] = rand.nextInt(10) + (-rand.nextInt(10));
-		// 	System.out.println("BOXXXXXXXXX: " + boxSpacingX[i] + ", " + boxSpacingZ[i]);
-		// 	protClient.sendCreate
-		// }
-
 		// --------------------- INPUT SECTION -----------------------
 		im = engine.getInputManager();
 		String gpName = im.getFirstGamepadName();
@@ -879,6 +864,9 @@ public class MyGame extends VariableFrameRateGame
 		if (currHeight != prevHeight)
 		{
 			avatar.setLocalLocation(new Vector3f(loc.x(), currHeight, loc.z()));
+			running = false;
+			stopJumpAction();
+			updateAvatarPhysicsObject();
 		}
 
 		prevHeight = currHeight;
