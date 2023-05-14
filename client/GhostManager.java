@@ -28,7 +28,7 @@ public class GhostManager
 	public void createGhostAvatar(UUID id, Vector3f position, int score, boolean crownOn) throws IOException
 	{	
 		System.out.println("adding ghost with ID --> " + id);
-		ObjShape s = game.getGhostShape();
+		AnimatedShape s = game.getGhostShape();
 		TextureImage t = game.getGhostTexture();
 		GhostAvatar newAvatar = new GhostAvatar(id, s, t, position, crownOn);
 		Matrix4f initialScale = (new Matrix4f()).scaling(0.25f);
@@ -61,6 +61,11 @@ public class GhostManager
 	public Vector<GhostAvatar> getAllGhost()
 	{
 		return ghostAvatars;
+	}
+
+	public boolean hasGhosts()
+	{
+		return ghostAvatars.isEmpty();
 	}
 
 	public String getGhostScore(UUID clientID, String message)

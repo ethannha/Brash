@@ -671,9 +671,9 @@ public class MyGame extends VariableFrameRateGame
 		return bm;
 	}
 
-	public ObjShape getGhostShape()
+	public AnimatedShape getGhostShape()
 	{
-		return ghostS;
+		return ghostAnimatedShape;
 	}
 
 	public TextureImage getGhostTexture()
@@ -805,11 +805,6 @@ public class MyGame extends VariableFrameRateGame
 		return avatarAnimatedShape;
 	}
 
-	public AnimatedShape getGhostAnimatedShape()
-	{
-		return ghostAnimatedShape;
-	}
-
 	@Override
 	public void update()
 	{	
@@ -845,6 +840,11 @@ public class MyGame extends VariableFrameRateGame
 
 		// Animation
 		avatarAnimatedShape.updateAnimation();
+
+		if (gm.hasGhosts())
+		{
+			ghostAnimatedShape.updateAnimation();
+		}
 
 		// update altitude of avatar based on height mapping
 		Vector3f loc = avatar.getWorldLocation();
