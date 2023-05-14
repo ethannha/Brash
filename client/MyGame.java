@@ -46,7 +46,7 @@ public class MyGame extends VariableFrameRateGame
 	private NodeController rotationNode;
 	private AttachController attachNode;
 	private IAudioManager audioMgr;
-	private Sound bgmSound, grassSound, collectSound, hitSound, jumpSound, deathSound, breakSound;
+	private Sound bgmSound, grassSound, collectSound, hitSound, jumpSound, breakSound;
 
 	private int sereneClouds; //skybox
 
@@ -280,9 +280,6 @@ public class MyGame extends VariableFrameRateGame
 
 		jumpSound.initialize(audioMgr);
 		jumpSound.setLocation(avatar.getWorldLocation());
-
-		deathSound.initialize(audioMgr);
-		deathSound.setLocation(avatar.getWorldLocation());
 		
 		collectSound.initialize(audioMgr);
 		collectSound.setMaxDistance(10.0f);
@@ -456,9 +453,6 @@ public class MyGame extends VariableFrameRateGame
 				}
 				hitSound.play();
 				breakSound.play();
-				break;
-			case KeyEvent.VK_H:
-				deathSound.play();
 				break;
 			case KeyEvent.VK_SPACE:
 				if (!avatarAnimatedShape.isPlayingAnimation("JUMP")) {
@@ -822,7 +816,6 @@ public class MyGame extends VariableFrameRateGame
 		hitSound.setLocation(avatar.getWorldLocation());
 		breakSound.setLocation(avatar.getWorldLocation());
 		jumpSound.setLocation(avatar.getWorldLocation());
-		deathSound.setLocation(avatar.getWorldLocation());
 		collectSound.setLocation(crown.getWorldLocation());
 		setEarParameters();
 
