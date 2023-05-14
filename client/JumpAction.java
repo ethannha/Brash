@@ -32,24 +32,16 @@ public class JumpAction extends AbstractInputAction
         if (keyValue > -0.2 && keyValue < 0.2) return; //deadzone
 
         //System.out.println("Transform VEL: " + avatarP.getTransform()[13]);
-        
-        // Get the local up direction of the avatar
 
-        if (avatarP.getTransform()[13] > 2.0f)
+        // game.setRunning(true);
+
+        if (game.getAvatarCanJump())
         {
-            linVel = new float[]{0.0f, 0.0f, 0.0f};
-            //System.out.println("REVERSING IN THE OPPOSITE WAY");
+            // Apply a force in the local y-direction of the avatar
+            avatarP.setLinearVelocity(linVel);
+            game.stopJumpAction();
+            //System.out.println("Linear VEL: " + avatarP.getLinearVelocity()[0] + ", " + avatarP.getLinearVelocity()[1] + ", " + avatarP.getLinearVelocity()[2]);
+            protClient.sendMoveMessage(game.getAvatar().getWorldLocation());   
         }
-        else
-        {
-            linVel = new float[]{0.0f, 5.0f, 0.0f};
-        }
-
-        game.setRunning(true);
-
-        // Apply a force in the local y-direction of the avatar
-        avatarP.setLinearVelocity(linVel);
-        //System.out.println("Linear VEL: " + avatarP.getLinearVelocity()[0] + ", " + avatarP.getLinearVelocity()[1] + ", " + avatarP.getLinearVelocity()[2]);
-        protClient.sendMoveMessage(game.getAvatar().getWorldLocation());
     }
 }

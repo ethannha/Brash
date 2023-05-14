@@ -79,7 +79,7 @@ public class MyGame extends VariableFrameRateGame
 	// Physics
 	private PhysicsEngine physicsEngine;
 	private PhysicsObject avatarP, planeP;
-	private boolean running = false;
+	private boolean running = true, canJump = false;
 	private float vals[] = new float[16];
 
 	// Animation
@@ -537,7 +537,11 @@ public class MyGame extends VariableFrameRateGame
 				if (contacPoint.getDistance() < 0.0f)
 				{
 					System.out.println("---- hit between " + obj1 + " and " + obj2);
-					running = false;
+					if (avatarP.getUID() == obj1.getUID() || avatarP.getUID() == obj2.getUID())
+					{
+						canJump = true;
+					}
+					// running = false;
 					break;
 				}
 			}
@@ -757,6 +761,16 @@ public class MyGame extends VariableFrameRateGame
 		{
 			System.out.println("Null ptr exception in " + script2 + "; " + e3);
 		}
+	}
+
+	public boolean getAvatarCanJump()
+	{
+		return canJump;
+	}
+
+	public void stopJumpAction()
+	{
+		canJump = false;
 	}
 
 	public void toggleAttachController()
