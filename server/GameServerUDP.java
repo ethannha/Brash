@@ -101,7 +101,6 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 
 			if (messageTokens[0].compareTo("rotate") == 0)
 			{
-				//System.out.println("================================== SERVER ROTATING: " + messageTokens[2] + ", " + messageTokens[3] + ", " + messageTokens[4] + ", " + messageTokens[5]);
 				UUID clientID = UUID.fromString(messageTokens[1]);
 				String[] rotatePos = {messageTokens[2], messageTokens[3], messageTokens[4], messageTokens[5]};
 				sendRotateMessage(clientID, rotatePos);

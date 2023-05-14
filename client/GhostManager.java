@@ -1,8 +1,6 @@
 package client;
 
-import java.awt.Color;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;

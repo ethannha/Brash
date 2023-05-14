@@ -3,7 +3,7 @@ var p1Win = 0;
 
 // JukeBox Object
 var b1X = 0.0;
-var b1Y = 1.0;
+var b1Y = 0.65;
 var b1Z = 0.0;
 
 // Avatar

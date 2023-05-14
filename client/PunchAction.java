@@ -5,6 +5,7 @@ import java.util.Vector;
 
 import net.java.games.input.Event;
 import tage.input.action.AbstractInputAction;
+import tage.networking.client.ProtocolClient;
 
 public class PunchAction extends AbstractInputAction
 {

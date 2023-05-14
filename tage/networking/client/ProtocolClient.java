@@ -1,4 +1,4 @@
-package client;
+package tage.networking.client;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -8,8 +8,16 @@ import java.util.Vector;
 
 import org.joml.*;
 
-import tage.*;
-import tage.networking.client.GameConnectionClient;
+import client.BoxManager;
+import client.GhostAvatar;
+import client.GhostManager;
+import client.GhostNPC;
+import client.MyGame;
+
+/**
+ * This clas is used to communicate with a server and receive server packets.
+ * @author Steven Ho and Ethan Ha
+ */
 
 public class ProtocolClient extends GameConnectionClient
 {
@@ -19,6 +27,11 @@ public class ProtocolClient extends GameConnectionClient
 	private UUID id;
 	private GhostNPC ghostNPC;
 	
+	/*
+	 * Initialization of the ProtocolClient in which takes in the IP address of client, port number, type of protocol (usually UDP)
+	 * and the game of the client (MyGame). This will also generate a random UUID for the client and take in the ghostManager and
+	 * box manager from the game.
+	 */
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
 	{	
 		super(remoteAddr, remotePort, protocolType);
@@ -28,8 +41,16 @@ public class ProtocolClient extends GameConnectionClient
 		boxManager = game.getBoxManager();
 	}
 	
+	/**
+	 * Get method that returns the UUID of the client
+	 * @return clientID
+	 */
 	public UUID getID() { return id; }
 	
+	/**
+	 * ProcessPacket is a method that will process any incoming pakcets from the server such as client joining the server
+	 * creating ghost avatars, boxes, and much more.
+	 */
 	@Override
 	protected void processPacket(Object message)
 	{	
@@ -278,11 +299,13 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 	
-	// The initial message from the game client requesting to join the 
-	// server. localId is a unique identifier for the client. Recommend 
-	// a random UUID.
-	// Message Format: (join,localId)
-	
+	/**
+	 * 
+	 *The initial message from the game client requesting to join the 
+	 * server. localId is a unique identifier for the client. Recommend 
+	 * a random UUID.
+	 * Message Format: (join,localId)
+	 */
 	public void sendJoinMessage()
 	{	
 		try 
@@ -295,9 +318,11 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 	
-	// Informs the server that the client is leaving the server. 
-	// Message Format: (bye,localId)
-
+	/**
+	 * Informs the server that the client is leaving the server. 
+	 * Message Format: (bye,localId)
+	 * @param score
+	 */
 	public void sendByeMessage(int score)
 	{	
 		try 
@@ -312,11 +337,15 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 	
-	// Informs the server of the client�s Avatar�s position. The server 
-	// takes this message and forwards it to all other clients registered 
-	// with the server.
-	// Message Format: (create,localId,x,y,z) where x, y, and z represent the position
-
+	/**
+	 * Informs the server of the client�s Avatar�s position. The server 
+	 * takes this message and forwards it to all other clients registered 
+	 * with the server.
+	 * Message Format: (create,localId,x,y,z) where x, y, and z represent the position
+	 * @param position
+	 * @param score
+	 * @param crownOn
+	 */
 	public void sendCreateMessage(Vector3f position, int score, boolean crownOn)
 	{	
 		try 
@@ -334,13 +363,19 @@ public class ProtocolClient extends GameConnectionClient
 			e.printStackTrace();
 		}	
 	}
-	
-	// Informs the server of the local avatar's position. The server then 
-	// forwards this message to the client with the ID value matching remoteId. 
-	// This message is generated in response to receiving a WANTS_DETAILS message 
-	// from the server.
-	// Message Format: (dsfr,remoteId,localId,x,y,z) where x, y, and z represent the position.
 
+	/**
+	 * Informs the server of the local avatar's position. The server then 
+	 * forwards this message to the client with the ID value matching remoteId. 
+	 * This message is generated in response to receiving a WANTS_DETAILS message 
+	 * from the server.
+	 * Message Format: (dsfr,remoteId,localId,x,y,z, score, crownOn) where x, y, and z represent the position, score represents client's
+	 * score, and crownOn representing if the crown is attach to this client
+	 * @param remoteId
+	 * @param position
+	 * @param score
+	 * @param crownOn
+	 */
 	public void sendDetailsForMessage(UUID remoteId, Vector3f position, int score, boolean crownOn)
 	{	
 		try 
@@ -359,9 +394,11 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 	
-	// Informs the server that the local avatar has changed position.  
-	// Message Format: (move,localId,x,y,z) where x, y, and z represent the position.
-
+	/**
+	 * Informs the server that the local avatar has changed position.  
+	 * Message Format: (move,localId,x,y,z) where x, y, and z represent the position.
+	 * @param position
+	 */
 	public void sendMoveMessage(Vector3f position)
 	{	
 		try 
@@ -379,6 +416,10 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 
+	/**
+	 * Sends the client current animation name to other clients on server
+	 * @param aniName
+	 */
 	public void sendAnimation(String aniName)
 	{
 		try
@@ -393,17 +434,16 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 	
-
-	// Informs the server that the local avatar has changed position.  
-	// Message Format: (move,localId,x,y,z) where x, y, and z represent the position.
-
+	/**
+	 * Informs of the clients on server of this client rotation
+	 * @param rotation
+	 */
 	public void sendRotateMessage(Matrix4f rotation)
 	{
 
 		AxisAngle4f rotMatrix = new AxisAngle4f();
 		rotation.getRotation(rotMatrix);
 
-		//System.out.println("==================================== ROTATION: " + rotMatrix.angle + ", " + rotMatrix.x + ", " + rotMatrix.y + ", " + rotMatrix.z);
 		try 
 		{	
 			String message = new String("rotate," + id.toString());
@@ -420,6 +460,9 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 
+	/**
+	 * Sending message to server to create this client's player score
+	 */
 	public void sendCreatePlayerScore()
 	{
 		try
@@ -433,6 +476,10 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Sending this client new score to server so that it can be updated across the server
+	 * @param score
+	 */
 	public void sendUpdatePlayerScore(int score)
 	{
 		try
@@ -449,6 +496,11 @@ public class ProtocolClient extends GameConnectionClient
 
 	// ------------------- GHOST NPC SECTION -----------------------------
 
+	/**
+	 * Creates the ghost npc that will appear on every client
+	 * @param position
+	 * @throws IOException
+	 */
 	private void createGhostNPC (Vector3f position) throws IOException
 	{
 		if (ghostNPC == null)
@@ -457,6 +509,11 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Updates the client position and size if it were to see a player or ghost
+	 * @param position
+	 * @param gsize
+	 */
 	private void updateGhostNPC (Vector3f position, double gsize)
 	{
 		boolean gs;
@@ -483,6 +540,11 @@ public class ProtocolClient extends GameConnectionClient
 		ghostNPC.setSize(gs);
 	}
 
+	/**
+	 * Sends a create NPC message if the client just join the server
+	 * @param npcID
+	 * @param position
+	 */
 	public void sendNPCCreateMessage(UUID npcID, Vector3f position)
 	{	
 		try 
@@ -499,6 +561,10 @@ public class ProtocolClient extends GameConnectionClient
 		}	
 	}
 
+	/**
+	 * Sends the npc information to the server so that every other client can have similar npc information
+	 * @param position
+	 */
 	public void sendNPCinfo(Vector3f position)
 	{
 		try 
@@ -515,6 +581,11 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Sends a message to the server if the npc is closeby to a player
+	 * @param playerPos
+	 * @param isNear
+	 */
 	public void sendNPCisAvNear(Vector3f playerPos, boolean isNear)
 	{
 		try
@@ -531,6 +602,11 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Sends a message to the server if the npc is closeby to a ghost
+	 * @param ghostPos
+	 * @param isNear
+	 */
 	public void sendNPCisGhostNear(Vector3f ghostPos, boolean isNear)
 	{
 		try
@@ -547,13 +623,16 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
-	// Box message
+	/**
+	 * Creates the boxes given the id of that box, its position, and if its alive or not
+	 * @param boxID
+	 * @param position
+	 * @param boxStatus
+	 */
 	private void createBoxObject (int boxID, Vector3f position, Boolean boxStatus)
 	{
 		try
 		{
-			// float boxX = game.boxSpacingX[boxCounter];
-			// float boxZ = game.boxSpacingZ[boxCounter];
 			boxManager.createBoxObject(boxID, position, boxStatus);
 		}
 		catch (IOException e)
@@ -562,6 +641,9 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Sends a message to server when this client needs the boxes
+	 */
 	public void sendNeedBoxObject()
 	{
 		try
@@ -575,6 +657,10 @@ public class ProtocolClient extends GameConnectionClient
 		}
 	}
 
+	/**
+	 * Removes the specified box from every client
+	 * @param boxID
+	 */
 	public void sendRemoveBoxObject(int boxID)
 	{
 		try

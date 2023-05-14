@@ -17,6 +17,7 @@ import tage.audio.*;
 import tage.input.*;
 import tage.input.action.*;
 import tage.networking.IGameConnection.ProtocolType;
+import tage.networking.client.ProtocolClient;
 import tage.nodeControllers.AttachController;
 import tage.nodeControllers.RotationController;
 import tage.physics.PhysicsEngine;
@@ -36,7 +37,7 @@ public class MyGame extends VariableFrameRateGame
 
 	private static Engine engine;
 	private GameObject avatar, crown, worldTerrain, jukeBoxObject;
-	private ObjShape crownS, ghostS, terrainS, jukeBoxS, boxS;
+	private ObjShape crownS, terrainS, jukeBoxS, boxS;
 	private TextureImage avatarTex, ghostTex, hillsTex, grassTex, crownTex, jukeBoxTex, boxTex;
 	private Light light1, spotLight;
 	private InputManager im;
@@ -82,7 +83,7 @@ public class MyGame extends VariableFrameRateGame
 	private float vals[] = new float[16];
 
 	// Animation
-	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape, npcAnimatedShape;
+	private AnimatedShape avatarAnimatedShape, ghostAnimatedShape;
 	private String aniName;
 
 	// NPC/AI
@@ -133,11 +134,6 @@ public class MyGame extends VariableFrameRateGame
 		ghostAnimatedShape.loadAnimation("PUNCHL", "player_punchL.rka");
 		ghostAnimatedShape.loadAnimation("PUNCHR", "player_punchR.rka");
 
-		npcAnimatedShape = new AnimatedShape("duck.rkm", "duck.rks");
-		npcAnimatedShape.loadAnimation("WALK", "duck_walk.rka");
-		npcAnimatedShape.loadAnimation("CHASE", "duck_chase.rka");
-
-		ghostS = new ImportedModel("player.obj");
 		npcShape = new ImportedModel("duck.obj");
 		terrainS = new TerrainPlane(1000);
 
@@ -183,7 +179,6 @@ public class MyGame extends VariableFrameRateGame
 
 		// build avatar in the center of the window
 		avatar = new GameObject(GameObject.root(), avatarAnimatedShape, avatarTex);
-		//avatar = new GameObject(GameObject.root(), avatarS, avatarT);
 		avatarPosX = (float)((double)jsEngine.get("avatarPosX"));
 		avatarPosY = (float)((double)jsEngine.get("avatarPosY"));
 		avatarPosZ = (float)((double)jsEngine.get("avatarPosZ"));
@@ -236,13 +231,13 @@ public class MyGame extends VariableFrameRateGame
 
 		spotLight = new Light();
 		spotLight.setType(LightType.SPOTLIGHT);
-		spotLight.setLocation(jukeBoxObject.getWorldLocation());
+		spotLight.setLocation(new Vector3f(jukeBoxObject.getWorldLocation().x, jukeBoxObject.getWorldLocation().y + 3, jukeBoxObject.getWorldLocation().z));
 		(engine.getSceneGraph()).addLight(spotLight);
 	}
 
 	public void initAudio()
 	{ 
-		AudioResource resource1, resource2, resource3, resource4, resource5, resource6, resource7;
+		AudioResource resource1, resource2, resource3, resource4, resource5, resource6;
 		audioMgr = AudioManagerFactory.createAudioManager("tage.audio.joal.JOALAudioManager");
 		if (!audioMgr.initialize()) { 
 			System.out.println("Audio Manager failed to initialize!");
@@ -253,16 +248,14 @@ public class MyGame extends VariableFrameRateGame
 		resource3 = audioMgr.createAudioResource("assets/sounds/collect.wav", AudioResourceType.AUDIO_SAMPLE);
 		resource4 = audioMgr.createAudioResource("assets/sounds/hit.wav", AudioResourceType.AUDIO_SAMPLE);
 		resource5 = audioMgr.createAudioResource("assets/sounds/jump.wav", AudioResourceType.AUDIO_SAMPLE);
-		resource6 = audioMgr.createAudioResource("assets/sounds/death.wav", AudioResourceType.AUDIO_SAMPLE);
-		resource7 = audioMgr.createAudioResource("assets/sounds/break.wav", AudioResourceType.AUDIO_SAMPLE);
+		resource6 = audioMgr.createAudioResource("assets/sounds/break.wav", AudioResourceType.AUDIO_SAMPLE);
 
 		bgmSound = new Sound(resource1, SoundType.SOUND_EFFECT, 100, true);
 		grassSound = new Sound(resource2, SoundType.SOUND_EFFECT, 100, true);
 		collectSound = new Sound(resource3, SoundType.SOUND_EFFECT, 100, false);
 		hitSound = new Sound(resource4, SoundType.SOUND_EFFECT, 75, false);
 		jumpSound = new Sound(resource5, SoundType.SOUND_EFFECT, 100, false);
-		deathSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
-		breakSound = new Sound(resource7, SoundType.SOUND_EFFECT, 100, false);
+		breakSound = new Sound(resource6, SoundType.SOUND_EFFECT, 100, false);
 		
 		bgmSound.initialize(audioMgr);
 		bgmSound.setMaxDistance(5.0f);
@@ -537,7 +530,7 @@ public class MyGame extends VariableFrameRateGame
 				System.out.println("DISTANCE: " + contacPoint.getDistance());
 				if (contacPoint.getDistance() < 0.0f)
 				{
-					System.out.println("---- hit between " + obj1 + " and " + obj2);
+					//System.out.println("---- hit between " + obj1 + " and " + obj2);
 					if (avatarP.getUID() == obj1.getUID() || avatarP.getUID() == obj2.getUID())
 					{
 						canJump = true;
@@ -839,10 +832,8 @@ public class MyGame extends VariableFrameRateGame
 		String dispStr1 = "|| You: " + playerScore + "             ||   "; 
 		dispStr1 += elapsTimeStr + "   ||   ";
 		dispStr1 = gm.getGhostScore(protClient.getID(), dispStr1);
-		
-		String dispStr2 = "X = " + avatar.getWorldLocation().x() + "  Y = " + avatar.getWorldLocation().y() + "  Z = " + avatar.getWorldLocation().z();
 		Vector3f hud1Color = new Vector3f(1,0,0);
-		(engine.getHUDmanager()).setHUD1(dispStr1 + "         " + dispStr2, hud1Color, (engine.getRenderSystem()).getWidth()/3, (engine.getRenderSystem()).getHeight()-hud1Height);
+		(engine.getHUDmanager()).setHUD1(dispStr1, hud1Color, (engine.getRenderSystem()).getWidth()/2 - 225, (engine.getRenderSystem()).getHeight()-hud1Height);
 
 		// update inputs and camera
 		im.update((float)elapsTime);
@@ -870,12 +861,6 @@ public class MyGame extends VariableFrameRateGame
 		}
 
 		prevHeight = currHeight;
-
-		// if (isAvatarCollidingObj(crown))
-		// {
-		// 	attachNode.toggle();
-		// 	collectSound.play();
-		// }
 
 		// update physics
 		if (running)

@@ -1,12 +1,9 @@
 package client;
 
-import org.joml.Vector3f;
 import net.java.games.input.Event;
-import tage.GameObject;
 import tage.input.action.AbstractInputAction;
-import tage.physics.PhysicsEngine;
+import tage.networking.client.ProtocolClient;
 import tage.physics.PhysicsObject;
-import tage.shapes.AnimatedShape;
 
 public class JumpAction extends AbstractInputAction 
 {

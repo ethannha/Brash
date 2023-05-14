@@ -1,5 +1,6 @@
 package client;
 import tage.input.action.AbstractInputAction;
+import tage.networking.client.ProtocolClient;
 import net.java.games.input.Event;
 
 public class GamePadAction extends AbstractInputAction
