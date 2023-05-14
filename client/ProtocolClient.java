@@ -248,29 +248,25 @@ public class ProtocolClient extends GameConnectionClient
 
 			if (messageTokens[0].compareTo("boxinfo") == 0)
 			{
-				System.out.println("THIS IS BOX INFOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO");
 				UUID clientID = UUID.fromString(messageTokens[1]);
 
+				int i = 3;
 
-				System.out.println("============================ INFO: " + Float.parseFloat(messageTokens[2]) + ", " + 
-				Float.parseFloat(messageTokens[3]) + ", " +
-				Float.parseFloat(messageTokens[4]));
-
-				Vector3f boxLocation = new Vector3f(
-					Float.parseFloat(messageTokens[2]), 
-					Float.parseFloat(messageTokens[3]), 
-					Float.parseFloat(messageTokens[4])
-				);
-
-				Boolean boxStatus = Boolean.parseBoolean(messageTokens[5]);
-
-				int amount = Integer.parseInt(messageTokens[6]);
-
-				for (int i = 0; i < amount; i++)
+				while (i < Integer.parseInt(messageTokens[2])*5)
 				{
-					createBoxObject(i, boxLocation, boxStatus);
+					int boxID = Integer.parseInt(messageTokens[i]);
+					Vector3f boxLocation = new Vector3f(
+					Float.parseFloat(messageTokens[i+1]), 
+					Float.parseFloat(messageTokens[i+2]), 
+					Float.parseFloat(messageTokens[i+3])
+					);
+
+					Boolean boxStatus = Boolean.parseBoolean(messageTokens[i+4]);
+
+					createBoxObject(boxID, boxLocation, boxStatus);
+
+					i+=5;
 				}
-				
 			}
 
 			if (messageTokens[0].compareTo("rmvbox") == 0)
@@ -552,11 +548,13 @@ public class ProtocolClient extends GameConnectionClient
 	}
 
 	// Box message
-	private void createBoxObject (int boxCounter, Vector3f position, Boolean boxStatus)
+	private void createBoxObject (int boxID, Vector3f position, Boolean boxStatus)
 	{
 		try
 		{
-			boxManager.createBoxObject(boxCounter, position.add(game.boxSpacing, 0.0f, 0.0f), boxStatus);
+			// float boxX = game.boxSpacingX[boxCounter];
+			// float boxZ = game.boxSpacingZ[boxCounter];
+			boxManager.createBoxObject(boxID, position, boxStatus);
 		}
 		catch (IOException e)
 		{

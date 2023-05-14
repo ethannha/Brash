@@ -6,9 +6,11 @@ public class Box
 {
     Vector3f boxLocation;
     Boolean boxStatus = true;
+    int boxID;
 
-    public Box()
+    public Box(int id)
     {
+        boxID = id;
         boxLocation = new Vector3f();
     }
 

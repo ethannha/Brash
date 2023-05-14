@@ -472,11 +472,17 @@ public class GameServerUDP extends GameConnectionServer<UUID>
 		try
 		{
 			String message = new String("boxinfo," + clientID.toString());
-			message += "," + (boxCtrl.getBox()).getPosition().x();
-			message += "," + (boxCtrl.getBox()).getPosition().y();
-			message += "," + (boxCtrl.getBox()).getPosition().z();
-			message += "," + (boxCtrl.getBox()).getBoxStatus();
 			message += "," + boxCtrl.getBoxAmount();
+			for (int i = 0; i < boxCtrl.boxAmount; i++)
+			{
+				
+				Box b = boxCtrl.getBoxLocation(i);
+				message += "," + b.boxID;
+				message += "," + b.getPosition().x();
+				message += "," + b.getPosition().y();
+				message += "," + b.getPosition().z();
+				message += "," + b.getBoxStatus();
+			}
 			sendPacket(message, clientID);
 		}
 		catch (IOException e)

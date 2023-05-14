@@ -60,7 +60,6 @@ public class MyGame extends VariableFrameRateGame
 	private ProtocolClient protClient;
 	private boolean isClientConnected = false, crownAttach = false;
 
-	public float boxSpacing = 2.0f;
 
 	// Script
 	private File script1, script2;
@@ -89,8 +88,6 @@ public class MyGame extends VariableFrameRateGame
 	// NPC/AI
 	private ObjShape npcShape;
 	private TextureImage npcTex;
-
-
 
 	public MyGame(String serverAddress, int serverPort, String protocol) 
 	{ 
@@ -227,6 +224,7 @@ public class MyGame extends VariableFrameRateGame
 		// initialRotation = (new Matrix4f()).rotationY((float)java.lang.Math.toRadians(135.0f));
 		jukeBoxObject.setLocalRotation(initialRotation);
 
+		
 	}
 
 	@Override
@@ -387,6 +385,20 @@ public class MyGame extends VariableFrameRateGame
 
 		// --------------------- Animation ---------------------
 		aniName = "IDLE";
+
+		// render random boxes
+		int numberOfBoxes = 20;
+		// boxSpacingX = new float[numberOfBoxes];
+		// boxSpacingZ = new float[numberOfBoxes];
+		// // random generator for box spacing x,z
+		// for(int i=0; i<numberOfBoxes; i++)
+		// {
+			
+		// 	boxSpacingX[i] = 2.0f + (rand.nextInt(2));
+		// 	boxSpacingZ[i] = rand.nextInt(10) + (-rand.nextInt(10));
+		// 	System.out.println("BOXXXXXXXXX: " + boxSpacingX[i] + ", " + boxSpacingZ[i]);
+		// 	protClient.sendCreate
+		// }
 
 		// --------------------- INPUT SECTION -----------------------
 		im = engine.getInputManager();
