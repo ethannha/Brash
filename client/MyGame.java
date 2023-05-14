@@ -159,8 +159,8 @@ public class MyGame extends VariableFrameRateGame
 		hillsTex = new TextureImage("hill.png");
 		grassTex = new TextureImage("grass.png");
 		npcTex = new TextureImage("duck_uv.png");
-		// jukeBoxTexture = new TextureImage("BlueWall.png");
-		// boxTexture = new TextureImage("BlueWall.png");
+		jukeBoxTex = new TextureImage("jukebox.png");
+		boxTex = new TextureImage("crate.png");
 
 	}
 
