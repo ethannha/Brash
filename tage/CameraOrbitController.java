@@ -11,6 +11,9 @@ import tage.input.IInputManager.INPUT_ACTION_TYPE;
 import tage.input.action.AbstractInputAction;
 import java.lang.Math;
 
+/**
+ * This is a class method that controls a camera orbitting around a gameobject
+ */
 public class CameraOrbitController 
 {
     private MyGame game;
@@ -37,6 +40,10 @@ public class CameraOrbitController
         updateCameraPosition();
     }
 
+    /**
+     * Basic inputs of how this camera orbits
+     * @param gp
+     */
     private void setUpInputs(String gp)
     {
         OrbitAzimuthAction azmAction = new OrbitAzimuthAction();
@@ -63,12 +70,11 @@ public class CameraOrbitController
         }
     }
 
-    /*
+    /**
      * Compute the camera's azimuth, elevation, and distance, relative to
      * the target in spherical coordinates, then convert to world Cartesian
      * coordinates and set the camera position from that
-    */
-
+     */
     public void updateCameraPosition()
     {
 

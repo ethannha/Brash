@@ -15,10 +15,9 @@ import client.GhostNPC;
 import client.MyGame;
 
 /**
- * This clas is used to communicate with a server and receive server packets.
+ * This class is used to communicate with a server and receive server packets.
  * @author Steven Ho and Ethan Ha
  */
-
 public class ProtocolClient extends GameConnectionClient
 {
 	private MyGame game;
@@ -27,10 +26,15 @@ public class ProtocolClient extends GameConnectionClient
 	private UUID id;
 	private GhostNPC ghostNPC;
 	
-	/*
+	/**
 	 * Initialization of the ProtocolClient in which takes in the IP address of client, port number, type of protocol (usually UDP)
 	 * and the game of the client (MyGame). This will also generate a random UUID for the client and take in the ghostManager and
 	 * box manager from the game.
+	 * @param remoteAddr
+	 * @param remotePort
+	 * @param protocolType
+	 * @param game
+	 * @throws IOException
 	 */
 	public ProtocolClient(InetAddress remoteAddr, int remotePort, ProtocolType protocolType, MyGame game) throws IOException 
 	{	
@@ -300,8 +304,7 @@ public class ProtocolClient extends GameConnectionClient
 	}
 	
 	/**
-	 * 
-	 *The initial message from the game client requesting to join the 
+	 * The initial message from the game client requesting to join the 
 	 * server. localId is a unique identifier for the client. Recommend 
 	 * a random UUID.
 	 * Message Format: (join,localId)

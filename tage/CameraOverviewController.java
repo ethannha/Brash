@@ -10,6 +10,9 @@ import tage.input.IInputManager.INPUT_ACTION_TYPE;
 import tage.input.action.AbstractInputAction;
 import java.lang.Math;
 
+/**
+ * Overview camera of the game world if made
+ */
 public class CameraOverviewController 
 {
     private Engine engine;
@@ -19,6 +22,13 @@ public class CameraOverviewController
     private float cameraTranslationZ;      // Elevation of camera above target
     private float cameraRadius;         // Distance between camera and target
     
+    /**
+     * Takes in a camera and the avatar to start off its location. Also takes in which gamepad to use
+     * @param cam
+     * @param av
+     * @param gpName
+     * @param e
+     */
     public CameraOverviewController(Camera cam, GameObject av, String gpName, Engine e)
     {
         engine = e;
@@ -31,6 +41,10 @@ public class CameraOverviewController
         updateOverviewPosition();
     }
 
+    /**
+     * Basic inputs of how this camera moves
+     * @param gp
+     */
     private void setUpInputs(String gp)
     {
         TranslateX translateX = new TranslateX();
@@ -50,6 +64,9 @@ public class CameraOverviewController
         im.associateActionWithAllKeyboards(net.java.games.input.Component.Identifier.Key.LBRACKET, radiusAction, INPUT_ACTION_TYPE.REPEAT_WHILE_DOWN);  
     }
 
+    /**
+     * Updating the overview camera position
+     */
     public void updateOverviewPosition()
     {
         float x = cameraTranslationX;
